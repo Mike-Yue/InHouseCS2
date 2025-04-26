@@ -7,12 +7,12 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Azure.Storage.Blobs" Version="12.24.0" />
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="9.0.4" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\Clients\Contracts\InHouseCS2.Core.Clients.Contracts.csproj" />
-    <ProjectReference Include="..\Contracts\InHouseCS2.Core.Managers.Contracts.csproj" />
+    <ProjectReference Include="..\Contracts\InHouseCS2.Core.Clients.Contracts.csproj" />
   </ItemGroup>
 
 </Project>

@@ -9,6 +9,6 @@ public sealed class UploadsManagerTests
     public void TestMethod1()
     {
         var uploadsManager = new UploadsManager();
-        uploadsManager.GetUploadURL("123", "dem").Should().Be("123");
+        uploadsManager.GetUploadURL("123", "dem").Should().Be("https://uploadUrl.com");
     }
 }

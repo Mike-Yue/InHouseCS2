@@ -1,5 +1,6 @@
 ﻿using InHouseCS2.Core.Managers.Contracts;
 using Microsoft.AspNetCore.Mvc;
+using System.Net;
 
 namespace InHouseCS2Service.Controllers
 {
@@ -17,9 +18,22 @@ namespace InHouseCS2Service.Controllers
         }
 
         [HttpPost("url")]
-        public string PostUrl()
+        public async Task<IActionResult> PostUrl()
         {
-            return "POSTURL";
+            var form = await this.Request.ReadFormAsync();
+
+            if (!form.TryGetValue("fileName", out var fileName))
+            {
+                return this.BadRequest("Missing fileName in request body");
+            }
+
+            if (!form.TryGetValue("fileExtension", out var fileExtension))
+            {
+                return this.BadRequest("Missing fileExtension in request body");
+            }
+            this.logger.LogInformation($"Filename is: {fileName}, FileExtension is {fileExtension}");
+
+            return this.Ok(this.uploadsManager.GetUploadURL(fileName!, fileExtension!));
         }
 
         [HttpPost("{matchUploadId}")]
