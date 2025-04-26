@@ -22,7 +22,5 @@ namespace InHouseCS2Service.Controllers
             this.logger.LogWarning("He;pp");
             return "Post!";
         }
-
-
     }
 }

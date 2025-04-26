@@ -11,7 +11,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\InHouseCS2.Core.StorageClients\InHouseCS2.Core.StorageClients.csproj" />
+    <ProjectReference Include="..\Core\StorageClients\Source\InHouseCS2.Core.StorageClients.csproj" />
   </ItemGroup>
 
 </Project>
