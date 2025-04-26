@@ -27,6 +27,5 @@ namespace InHouseCS2Service.Controllers
             return "Post!";
         }
 
-
     }
 }

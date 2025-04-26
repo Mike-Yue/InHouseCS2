@@ -1,4 +1,4 @@
-﻿using InHouseCS2.Core.StorageClients.Contracts;
+﻿using InHouseCS2.Core.Managers.Contracts;
 using Microsoft.AspNetCore.Mvc;
 
 namespace InHouseCS2Service.Controllers
@@ -8,19 +8,30 @@ namespace InHouseCS2Service.Controllers
     public class UploadsController : ControllerBase
     {
         private readonly ILogger<UploadsController> logger;
-        private readonly IBlobStorageManager blobStorageManager;
+        private readonly IUploadsManager uploadsManager;
 
-        public UploadsController(IBlobStorageManager blobStorageManager, ILogger<UploadsController> logger)
+        public UploadsController(IUploadsManager uploadsManager, ILogger<UploadsController> logger)
         {
-            this.blobStorageManager = blobStorageManager;
+            this.uploadsManager = uploadsManager;
             this.logger = logger;
         }
 
-        [HttpPost]
-        public string Post()
+        [HttpPost("url")]
+        public string PostUrl()
         {
-            this.logger.LogWarning("He;pp");
-            return "Post!";
+            return "POSTURL";
+        }
+
+        [HttpPost("{matchUploadId}")]
+        public string PostMatchUploadId(string matchUploadId)
+        {
+            return matchUploadId;
+        }
+
+        [HttpGet("{matchUploadId}")]
+        public string GetMatchUploadId(string matchUploadId)
+        {
+            return matchUploadId;
         }
     }
 }

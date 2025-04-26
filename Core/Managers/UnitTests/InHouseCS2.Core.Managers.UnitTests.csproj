@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
@@ -14,7 +14,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Source\InHouseCS2.Core.StorageClients.csproj" />
+    <ProjectReference Include="..\Contracts\InHouseCS2.Core.Managers.Contracts.csproj" />
+    <ProjectReference Include="..\Source\InHouseCS2.Core.Managers.csproj" />
   </ItemGroup>
 
   <ItemGroup>
