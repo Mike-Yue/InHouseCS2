@@ -1,6 +1,5 @@
 ﻿using InHouseCS2.Core.Managers.Contracts;
 using Microsoft.AspNetCore.Mvc;
-using System.Net;
 
 namespace InHouseCS2Service.Controllers
 {
@@ -36,6 +35,13 @@ namespace InHouseCS2Service.Controllers
             return this.Ok(this.uploadsManager.GetUploadURL(fileName!, fileExtension!));
         }
 
+        [HttpPost("{matchUploadId}/notifyUploadStatus")]
+        public async Task<IActionResult> PostMatchUploadComplete(string matchUploadId)
+        {
+            await this.uploadsManager.SetMatchUploadStatusToUploaded(Int32.Parse(matchUploadId));
+            return this.Ok();
+        }
+
         [HttpPost("{matchUploadId}")]
         public string PostMatchUploadId(string matchUploadId)
         {
@@ -43,9 +49,9 @@ namespace InHouseCS2Service.Controllers
         }
 
         [HttpGet("{matchUploadId}")]
-        public string GetMatchUploadId(string matchUploadId)
+        public async Task<string> GetMatchUploadId(string matchUploadId)
         {
-            return matchUploadId;
+            return await this.uploadsManager.GetMatchUploadStatus(Int32.Parse(matchUploadId));
         }
     }
 }

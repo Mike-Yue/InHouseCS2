@@ -1,5 +1,9 @@
 ﻿namespace InHouseCS2.Core.Managers.Contracts;
 public interface IUploadsManager
 {
-    public string GetUploadURL(string fileName, string fileExtension);
+    public Task<UploadMetaData> GetUploadURL(string fileName, string fileExtension);
+
+    public Task<string> GetMatchUploadStatus(int id);
+
+    public Task SetMatchUploadStatusToUploaded(int id);
 }

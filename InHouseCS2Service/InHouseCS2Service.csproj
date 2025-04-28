@@ -13,6 +13,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Core\Clients\Source\InHouseCS2.Core.Clients.csproj" />
+    <ProjectReference Include="..\Core\EntityStores\Source\InHouseCS2.Core.EntityStores.csproj" />
     <ProjectReference Include="..\Core\Managers\Source\InHouseCS2.Core.Managers.csproj" />
   </ItemGroup>
 

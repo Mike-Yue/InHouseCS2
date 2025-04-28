@@ -5,6 +5,10 @@ using InHouseCS2.Core.Clients.Contracts;
 using InHouseCS2.Core.Managers;
 using InHouseCS2.Core.Managers.Contracts;
 using DotNetEnv;
+using Microsoft.EntityFrameworkCore;
+using InHouseCS2.Core.EntityStores.Models;
+using InHouseCS2.Core.EntityStores;
+using InHouseCS2.Core.EntityStores.Contracts;
 
 Env.Load();
 
@@ -16,9 +20,13 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+builder.Services.AddDbContext<AzureSqlDbContext>(options => options.UseSqlServer(
+    Environment.GetEnvironmentVariable("SQLSERVER_CONNECTION_STRING")
+    ));
+
 BlobContainerClient blobContainerClient = new BlobContainerClient(
-    connectionString: Environment.GetEnvironmentVariable("BlOBCONTAINER_CONNECTION_STRING"),
-    blobContainerName: "demos");
+connectionString: Environment.GetEnvironmentVariable("BlOBCONTAINER_CONNECTION_STRING"),
+blobContainerName: "demos");
 
 builder.Services.AddScoped<IMediaStorageClient>(serviceProvider =>
 {
@@ -26,10 +34,13 @@ builder.Services.AddScoped<IMediaStorageClient>(serviceProvider =>
         blobContainerClient,
         serviceProvider.GetRequiredService<ILogger<AzureBlobStorageClient>>());
 });
+
+builder.Services.AddScoped(typeof(IEntityStore<MatchUploadEntity>), typeof(EntityStore<MatchUploadEntity>));
 builder.Services.AddScoped<IUploadsManager>(serviceProvider =>
 {
     return new UploadsManager(
         serviceProvider.GetRequiredService<IMediaStorageClient>(),
+        serviceProvider.GetRequiredService<IEntityStore<MatchUploadEntity>>(),
         serviceProvider.GetRequiredService<ILogger<UploadsManager>>());
 });
 
