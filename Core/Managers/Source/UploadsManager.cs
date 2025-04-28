@@ -36,12 +36,27 @@ public class UploadsManager : IUploadsManager
         return new UploadMetaData(uploadInfo.uploadUri, id);
     }
 
-    public async Task SetMatchUploadStatusToUploaded(int id)
+    public async Task SetMatchUploadStatusToUploaded(Uri mediaStorageUri)
     {
-        await this.matchUploadEntityStore.Update(id, (matchUploadEntity) =>
+        var entities = await this.matchUploadEntityStore.FindAll((x) => x.DemoMediaStoreUri == mediaStorageUri);
+        if (entities.Count == 0)
         {
-            matchUploadEntity.Status = MatchUploadStatus.Uploaded;
-        });
+            return;
+        }
+
+        if (entities.Count == 1)
+        {
+            await this.matchUploadEntityStore.Update(entities[0].Id, (matchUploadEntity) =>
+            {
+                matchUploadEntity.Status = MatchUploadStatus.Uploaded;
+            });
+
+            // Grab a PreSigned Url, pass id of entity and presigned URL to match parser service
+        }
+        else
+        {
+            throw new Exception("Multiple rows found with the same media storage Uri");
+        }
     }
 
     private MatchUploadEntity CreateNewMatchUploadEntity(Uri mediaStorageUri)

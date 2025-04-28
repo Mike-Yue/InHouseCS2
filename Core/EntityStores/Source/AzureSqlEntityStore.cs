@@ -1,13 +1,12 @@
 ﻿using InHouseCS2.Core.EntityStores.Contracts;
 using InHouseCS2.Core.EntityStores.Models;
 using Microsoft.EntityFrameworkCore;
+using System.Linq.Expressions;
 
 namespace InHouseCS2.Core.EntityStores;
 
 public class AzureSqlEntityStore<T> : IEntityStore<T> where T : BaseEntity
 {
-    // Don't like this, it's tightly coupled. The entityStore layer should be able to save changes regardless of what underlying DB technology is used
-    // Maybe add another layer
     private readonly DbContext dbContext;
     private readonly DbSet<T> dbSet;
 
@@ -29,9 +28,22 @@ public class AzureSqlEntityStore<T> : IEntityStore<T> where T : BaseEntity
         throw new NotImplementedException();
     }
 
+    public async Task<List<T>> FindAll(Expression<Func<T, bool>> filterFunc)
+    {
+        return await this.dbSet.Where(filterFunc).ToListAsync();
+    }
+
     public async Task<T> Get(int id)
     {
-        return await this.dbSet.FindAsync(id);
+        T? entity = await this.dbSet.FindAsync(id);
+        if (entity == null)
+        {
+            throw new Exception($"Entity with Id {id} not found");
+        }
+        else
+        {
+            return entity;
+        }
     }
 
     public async Task<int> Update(int id, Action<T> updateFunc)

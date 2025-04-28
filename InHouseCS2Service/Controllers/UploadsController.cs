@@ -35,10 +35,14 @@ namespace InHouseCS2Service.Controllers
             return this.Ok(this.uploadsManager.GetUploadURL(fileName!, fileExtension!));
         }
 
-        [HttpPost("{matchUploadId}/notifyUploadStatus")]
-        public async Task<IActionResult> PostMatchUploadComplete(string matchUploadId)
+        [HttpPost("notifyUploadStatus")]
+        public async Task<IActionResult> PostMatchUploadComplete()
         {
-            await this.uploadsManager.SetMatchUploadStatusToUploaded(Int32.Parse(matchUploadId));
+            if (!this.Request.Headers.TryGetValue("media-storage-uri", out var mediaStorageUri))
+            {
+                return this.BadRequest("Required header value not provided");
+            }
+            await this.uploadsManager.SetMatchUploadStatusToUploaded(new Uri(mediaStorageUri!));
             return this.Ok();
         }
 

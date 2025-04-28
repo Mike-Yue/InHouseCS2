@@ -5,5 +5,5 @@ public interface IUploadsManager
 
     public Task<string> GetMatchUploadStatus(int id);
 
-    public Task SetMatchUploadStatusToUploaded(int id);
+    public Task SetMatchUploadStatusToUploaded(Uri mediaStorageUri);
 }
