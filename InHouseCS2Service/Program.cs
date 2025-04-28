@@ -35,7 +35,7 @@ builder.Services.AddScoped<IMediaStorageClient>(serviceProvider =>
         serviceProvider.GetRequiredService<ILogger<AzureBlobStorageClient>>());
 });
 
-builder.Services.AddScoped(typeof(IEntityStore<MatchUploadEntity>), typeof(EntityStore<MatchUploadEntity>));
+builder.Services.AddScoped(typeof(IEntityStore<MatchUploadEntity>), typeof(AzureSqlEntityStore<MatchUploadEntity>));
 builder.Services.AddScoped<IUploadsManager>(serviceProvider =>
 {
     return new UploadsManager(

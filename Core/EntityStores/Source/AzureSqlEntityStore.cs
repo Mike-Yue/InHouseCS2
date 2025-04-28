@@ -4,14 +4,14 @@ using Microsoft.EntityFrameworkCore;
 
 namespace InHouseCS2.Core.EntityStores;
 
-public class EntityStore<T> : IEntityStore<T> where T : BaseEntity
+public class AzureSqlEntityStore<T> : IEntityStore<T> where T : BaseEntity
 {
     // Don't like this, it's tightly coupled. The entityStore layer should be able to save changes regardless of what underlying DB technology is used
     // Maybe add another layer
     private readonly DbContext dbContext;
     private readonly DbSet<T> dbSet;
 
-    public EntityStore(AzureSqlDbContext dbContext) {
+    public AzureSqlEntityStore(AzureSqlDbContext dbContext) {
         this.dbContext = dbContext;
         this.dbSet = this.dbContext.Set<T>();
     }
