@@ -40,7 +40,7 @@ public class UploadsManager : IUploadsManager
         {
             MatchUploadEntity newMatchUpload = new MatchUploadEntity();
             newMatchUpload.Status = MatchUploadStatus.Initialized;
-            newMatchUpload.DemoMediaStoreUri = uploadInfo.mediaUri;
+            newMatchUpload.DemoMediaStoreUri = uploadInfo.mediaUri.ToString();
             newMatchUpload.CreatedAt = DateTime.Now;
             newMatchUpload.LastUpdatedAt = DateTime.Now;
             return newMatchUpload;
@@ -50,14 +50,16 @@ public class UploadsManager : IUploadsManager
 
     public async Task UpdateMatchStatusAndPersistWork(Uri mediaStorageUri)
     {
-        var entities = await this.matchUploadEntityStore.FindAll((x) => x.DemoMediaStoreUri == mediaStorageUri);
+        var entities = await this.matchUploadEntityStore.FindAll((x) => x.DemoMediaStoreUri == mediaStorageUri.ToString());
         if (entities.Count == 0)
         {
+            this.logger.LogInformation("No entities found. Returning");
             return;
         }
 
         if (entities.Count == 1)
         {
+            this.logger.LogInformation("1 entity found. Working");
             await this.matchUploadEntityStore.Update(entities[0].Id, (matchUploadEntity) =>
             {
                 matchUploadEntity.Status = MatchUploadStatus.Uploaded;

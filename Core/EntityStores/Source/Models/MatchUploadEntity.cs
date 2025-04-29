@@ -4,7 +4,7 @@ public class MatchUploadEntity : BaseEntity
 {
     public MatchUploadStatus Status { get; set; }
     
-    public Uri? DemoMediaStoreUri { get; set; }
+    public string? DemoMediaStoreUri { get; set; }
 
     public string? DemoFingerprint { get; set; }
 

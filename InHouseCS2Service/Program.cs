@@ -10,6 +10,7 @@ using InHouseCS2.Core.EntityStores.Models;
 using InHouseCS2.Core.EntityStores;
 using InHouseCS2.Core.EntityStores.Contracts;
 using Microsoft.Extensions.DependencyInjection;
+using InHouseCS2Service;
 
 Env.Load();
 
@@ -20,6 +21,8 @@ builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+
+builder.Services.AddHostedService<MatchParsingWorkPoller>();
 
 builder.Services.AddDbContext<AzureSqlDbContext>(options => options.UseSqlServer(
     Environment.GetEnvironmentVariable("SQLSERVER_CONNECTION_STRING")

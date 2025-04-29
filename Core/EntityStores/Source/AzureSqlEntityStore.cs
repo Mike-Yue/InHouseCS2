@@ -32,6 +32,7 @@ public class AzureSqlEntityStore<T> : IEntityStore<T> where T : BaseEntity
 
     public async Task<List<T>> FindAll(Expression<Func<T, bool>> filterFunc)
     {
+        Console.WriteLine("hello there");
         return await this.dbSet.Where(filterFunc).ToListAsync();
     }
 
