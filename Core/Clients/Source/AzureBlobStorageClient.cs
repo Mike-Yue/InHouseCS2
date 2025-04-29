@@ -16,7 +16,7 @@ public class AzureBlobStorageClient : IMediaStorageClient
         this.logger = logger;
     }
 
-    public MediaUploadInfo GetUploadUrl(string fileName, string fileExtension, double hoursValidFor)
+    public MediaUploadInfo GetUploadUrl(string fileExtension, double hoursValidFor)
     {
         this.logger.LogInformation($"Can generate SAS URI - {this.blobContainerClient.CanGenerateSasUri}");
         var guid = Guid.NewGuid();

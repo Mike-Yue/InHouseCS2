@@ -31,18 +31,26 @@ public class UploadsManager : IUploadsManager
         return matchUpload.CreatedAt.ToString();
     }
 
-    public async Task<UploadMetaData> GetUploadURL(string fileName, string fileExtension)
+    public async Task<UploadMetaData?> GetUploadURL(string fileFingerprint, string fileExtension)
     {
-        this.logger.LogInformation($"Getting upload URL for {fileName}.{fileExtension}");
-        var uploadInfo = this.mediaStorageClient.GetUploadUrl(fileName, fileExtension, 1);
+        var filesWithSameFingerPrint = await this.matchUploadEntityStore.FindAll((x) => x.DemoFingerprint == fileFingerprint);
+        if (filesWithSameFingerPrint.Count > 0)
+        {
+            return null;
+        }
+
+        var uploadInfo = this.mediaStorageClient.GetUploadUrl(fileExtension, 1);
 
         var id = await this.matchUploadEntityStore.Create(() =>
         {
-            MatchUploadEntity newMatchUpload = new MatchUploadEntity();
-            newMatchUpload.Status = MatchUploadStatus.Initialized;
-            newMatchUpload.DemoMediaStoreUri = uploadInfo.mediaUri.ToString();
-            newMatchUpload.CreatedAt = DateTime.Now;
-            newMatchUpload.LastUpdatedAt = DateTime.Now;
+            var newMatchUpload = new MatchUploadEntity
+            {
+                DemoFingerprint = fileFingerprint,
+                Status = MatchUploadStatus.Initialized,
+                DemoMediaStoreUri = uploadInfo.mediaUri.ToString(),
+                CreatedAt = DateTime.Now,
+                LastUpdatedAt = DateTime.Now
+            };
             return newMatchUpload;
         });
         return new UploadMetaData(uploadInfo.uploadUri, id);

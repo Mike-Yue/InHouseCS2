@@ -2,5 +2,5 @@
 
 public interface IMediaStorageClient
 {
-    public MediaUploadInfo GetUploadUrl(string fileName, string fileExtension, double hoursValidFor);
+    public MediaUploadInfo GetUploadUrl(string fileExtension, double hoursValidFor);
 }

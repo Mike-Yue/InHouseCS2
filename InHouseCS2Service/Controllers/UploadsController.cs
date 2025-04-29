@@ -1,4 +1,5 @@
 ﻿using InHouseCS2.Core.Managers.Contracts;
+using InHouseCS2Service.Controllers.Models;
 using Microsoft.AspNetCore.Mvc;
 
 namespace InHouseCS2Service.Controllers
@@ -17,22 +18,15 @@ namespace InHouseCS2Service.Controllers
         }
 
         [HttpPost("url")]
-        public async Task<IActionResult> PostUrl()
+        public async Task<IActionResult> PostUrl([FromBody] DemoFileMetadata demoFileMetadata)
         {
-            var form = await this.Request.ReadFormAsync();
-
-            if (!form.TryGetValue("fileName", out var fileName))
+            if (!string.Equals(demoFileMetadata.FileExtension, "dem", StringComparison.OrdinalIgnoreCase))
             {
-                return this.BadRequest("Missing fileName in request body");
+                return this.BadRequest("Invalid demo file extension");
             }
+            var uploadMetaData = await this.uploadsManager.GetUploadURL(demoFileMetadata.DemoFingerPrint, demoFileMetadata.FileExtension);
 
-            if (!form.TryGetValue("fileExtension", out var fileExtension))
-            {
-                return this.BadRequest("Missing fileExtension in request body");
-            }
-            this.logger.LogInformation($"Filename is: {fileName}, FileExtension is {fileExtension}");
-
-            return this.Ok(this.uploadsManager.GetUploadURL(fileName!, fileExtension!));
+            return uploadMetaData is null ? this.BadRequest($"Demo with fingerprint {demoFileMetadata.DemoFingerPrint} already exists in db") : this.Ok(uploadMetaData);
         }
 
         [HttpPost("notifyUploadStatus")]

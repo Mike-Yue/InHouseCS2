@@ -6,7 +6,7 @@ public class MatchUploadEntity : BaseEntity
     
     public string? DemoMediaStoreUri { get; set; }
 
-    public string? DemoFingerprint { get; set; }
+    public required string DemoFingerprint { get; set; }
 
     public DateTime CreatedAt { get; set; }
 
