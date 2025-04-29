@@ -1,6 +1,7 @@
 ﻿using InHouseCS2.Core.EntityStores.Contracts;
 using InHouseCS2.Core.EntityStores.Models;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using System.Linq.Expressions;
 
 namespace InHouseCS2.Core.EntityStores;
@@ -15,8 +16,9 @@ public class AzureSqlEntityStore<T> : IEntityStore<T> where T : BaseEntity
         this.dbSet = this.dbContext.Set<T>();
     }
 
-    public Task<int> Create(T entity)
+    public Task<int> Create(Func<T> createFunc)
     {
+        var entity = createFunc();
         this.dbContext.Add(entity);
         this.dbContext.SaveChanges();
         var id = entity.Id;

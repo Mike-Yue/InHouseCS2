@@ -1,5 +1,4 @@
-﻿using InHouseCS2.Core.Clients;
-using InHouseCS2.Core.Clients.Contracts;
+﻿using InHouseCS2.Core.Clients.Contracts;
 using InHouseCS2.Core.EntityStores.Contracts;
 using InHouseCS2.Core.EntityStores.Models;
 using InHouseCS2.Core.Managers.Contracts;
@@ -11,12 +10,18 @@ public class UploadsManager : IUploadsManager
 {
     private readonly IMediaStorageClient mediaStorageClient;
     private readonly IEntityStore<MatchUploadEntity> matchUploadEntityStore;
+    private readonly IEntityStore<ParseMatchTaskEntity> parseMatchTaskEntityStore;
     private readonly ILogger<UploadsManager> logger;
 
-    public UploadsManager(IMediaStorageClient mediaStorageClient, IEntityStore<MatchUploadEntity> matchUploadEntityStore, ILogger<UploadsManager> logger)
+    public UploadsManager(
+        IMediaStorageClient mediaStorageClient,
+        IEntityStore<MatchUploadEntity> matchUploadEntityStore,
+        IEntityStore<ParseMatchTaskEntity> parseMatchTaskEntityStore,
+        ILogger<UploadsManager> logger)
     {
         this.mediaStorageClient = mediaStorageClient;
         this.matchUploadEntityStore = matchUploadEntityStore;
+        this.parseMatchTaskEntityStore = parseMatchTaskEntityStore;
         this.logger = logger;
     }
 
@@ -31,12 +36,19 @@ public class UploadsManager : IUploadsManager
         this.logger.LogInformation($"Getting upload URL for {fileName}.{fileExtension}");
         var uploadInfo = this.mediaStorageClient.GetUploadUrl(fileName, fileExtension, 1);
 
-        MatchUploadEntity newMatchUpload = this.CreateNewMatchUploadEntity(uploadInfo.mediaUri);
-        var id = await this.matchUploadEntityStore.Create(newMatchUpload);
+        var id = await this.matchUploadEntityStore.Create(() =>
+        {
+            MatchUploadEntity newMatchUpload = new MatchUploadEntity();
+            newMatchUpload.Status = MatchUploadStatus.Initialized;
+            newMatchUpload.DemoMediaStoreUri = uploadInfo.mediaUri;
+            newMatchUpload.CreatedAt = DateTime.Now;
+            newMatchUpload.LastUpdatedAt = DateTime.Now;
+            return newMatchUpload;
+        });
         return new UploadMetaData(uploadInfo.uploadUri, id);
     }
 
-    public async Task SetMatchUploadStatusToUploaded(Uri mediaStorageUri)
+    public async Task UpdateMatchStatusAndPersistWork(Uri mediaStorageUri)
     {
         var entities = await this.matchUploadEntityStore.FindAll((x) => x.DemoMediaStoreUri == mediaStorageUri);
         if (entities.Count == 0)
@@ -51,21 +63,28 @@ public class UploadsManager : IUploadsManager
                 matchUploadEntity.Status = MatchUploadStatus.Uploaded;
             });
 
-            // Grab a PreSigned Url, pass id of entity and presigned URL to match parser service
+            // Get all currently recorded matchParse tasks for this matchUploadId
+            // If any are in a valid state (not failed) then we don't do anything
+            var parseMatchTasks = await this.parseMatchTaskEntityStore
+                .FindAll((x) => x.MatchUploadEntityId == entities[0].Id && x.Status != ParseMatchTaskStatus.Failed);
+
+            if (parseMatchTasks.Count == 0)
+            {
+                await this.parseMatchTaskEntityStore.Create(() =>
+                {
+                    return new ParseMatchTaskEntity
+                    {
+                        DemoMediaStoreUri = mediaStorageUri,
+                        Status = ParseMatchTaskStatus.Initialized,
+                        MatchUploadEntityId = entities[0].Id,
+                        MatchUploadEntity = entities[0]
+                    };
+                });
+            }
         }
         else
         {
             throw new Exception("Multiple rows found with the same media storage Uri");
         }
-    }
-
-    private MatchUploadEntity CreateNewMatchUploadEntity(Uri mediaStorageUri)
-    {
-        MatchUploadEntity newMatchUpload = new MatchUploadEntity();
-        newMatchUpload.Status = MatchUploadStatus.Initialized;
-        newMatchUpload.DemoMediaStoreUri = mediaStorageUri;
-        newMatchUpload.CreatedAt = DateTime.Now;
-        newMatchUpload.LastUpdatedAt = DateTime.Now;
-        return newMatchUpload;
     }
 }

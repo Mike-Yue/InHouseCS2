@@ -42,7 +42,7 @@ namespace InHouseCS2Service.Controllers
             {
                 return this.BadRequest("Required header value not provided");
             }
-            await this.uploadsManager.SetMatchUploadStatusToUploaded(new Uri(mediaStorageUri!));
+            await this.uploadsManager.UpdateMatchStatusAndPersistWork(new Uri(mediaStorageUri!));
             return this.Ok();
         }
 

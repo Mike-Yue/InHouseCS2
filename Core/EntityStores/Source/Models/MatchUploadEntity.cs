@@ -13,4 +13,6 @@ public class MatchUploadEntity : BaseEntity
     public string? ErrorMessage { get; set; }
 
     public DateTime LastUpdatedAt { get; set; }
+
+    public ICollection<ParseMatchTaskEntity>? ParseMatchTasks { get; }
 }

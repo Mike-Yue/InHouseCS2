@@ -9,7 +9,7 @@ public interface IEntityStore<T> where T: class
     // This probably works better as an enumerator instead of a list
     public Task<List<T>> FindAll(Expression<Func<T, bool>> filterFunc);
 
-    public Task<int> Create(T entity);
+    public Task<int> Create(Func<T> createFunc);
 
     public Task<int> Update(int id, Action<T> updateFunc);
 

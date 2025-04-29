@@ -18,7 +18,7 @@ public sealed class UploadsManagerTests
         uploadsManagerFixture.mockMediaStorageClient
             .Setup(m => m.GetUploadUrl("file1", "dem", 1))
             .Returns(new Clients.MediaUploadInfo(new Uri("https://uploadUrl.com"), new Uri("https://mediaUrl.com")));
-        uploadsManagerFixture.mockMatchUploadEntityStore.Setup(m => m.Create(It.IsAny<MatchUploadEntity>())).ReturnsAsync(1);
+        uploadsManagerFixture.mockMatchUploadEntityStore.Setup(m => m.Create(It.IsAny<Func<MatchUploadEntity>>())).ReturnsAsync(1);
 
         await uploadsManagerFixture.TestComponentAndVerifyMocksAsync(async s =>
         {
@@ -32,6 +32,7 @@ public sealed class UploadsManagerTests
     {
         public Mock<IMediaStorageClient> mockMediaStorageClient = new(MockBehavior.Strict);
         public Mock<IEntityStore<MatchUploadEntity>> mockMatchUploadEntityStore = new(MockBehavior.Strict);
+        public Mock<IEntityStore<ParseMatchTaskEntity>> mockParseMatchTaskEntityStore = new(MockBehavior.Strict);
 
         public override UploadsManager SetSubject()
         {
@@ -40,6 +41,7 @@ public sealed class UploadsManagerTests
             return new UploadsManager(
                 mediaStorageClient: this.mockMediaStorageClient.Object,
                 matchUploadEntityStore: this.mockMatchUploadEntityStore.Object,
+                parseMatchTaskEntityStore: this.mockParseMatchTaskEntityStore.Object,
                 logger: logger
                 );
         }
