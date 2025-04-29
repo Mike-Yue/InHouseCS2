@@ -48,10 +48,11 @@ namespace InHouseCS2Service
             this.logger.LogInformation("Polling service stopped");
         }
 
-        private async Task SendToMatchParserService(ParseMatchTaskEntity entity)
+        private async Task SendToMatchParserService(ParseMatchTaskEntity task)
         {
-            this.logger.LogInformation($"Executing work on {entity.Id}");
-            // Get Presigned URL and send to Match service
+            this.logger.LogInformation($"Executing work on {task.Id}");
+            var associatedMatchUploadId = task.MatchUploadEntityId;
+            // Get Presigned URL and associatedMatchUploadId and send to Match service
             await Task.CompletedTask;
         }
     }

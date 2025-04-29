@@ -1,4 +1,6 @@
-﻿using InHouseCS2.Core.Managers.Contracts;
+﻿using AutoMapper;
+using InHouseCS2.Core.Managers.Contracts;
+using InHouseCS2.Core.Managers.Models;
 using InHouseCS2Service.Controllers.Models;
 using Microsoft.AspNetCore.Mvc;
 
@@ -10,10 +12,12 @@ namespace InHouseCS2Service.Controllers
     {
         private readonly ILogger<UploadsController> logger;
         private readonly IUploadsManager uploadsManager;
+        private readonly IMapper mapper;
 
-        public UploadsController(IUploadsManager uploadsManager, ILogger<UploadsController> logger)
+        public UploadsController(IUploadsManager uploadsManager, IMapper mapper, ILogger<UploadsController> logger)
         {
             this.uploadsManager = uploadsManager;
+            this.mapper = mapper;
             this.logger = logger;
         }
 
@@ -41,8 +45,10 @@ namespace InHouseCS2Service.Controllers
         }
 
         [HttpPost("{matchUploadId}")]
-        public string PostMatchUploadId(string matchUploadId)
+        public string PostMatchUploadId(string matchUploadId, [FromBody] MatchDataObject matchDataObject)
         {
+            var output = this.mapper.Map<CoreMatchDataRecord>(matchDataObject);
+            this.logger.LogInformation(output.MatchMetadata.Map);
             return matchUploadId;
         }
 

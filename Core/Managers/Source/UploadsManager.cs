@@ -2,6 +2,8 @@
 using InHouseCS2.Core.EntityStores.Contracts;
 using InHouseCS2.Core.EntityStores.Models;
 using InHouseCS2.Core.Managers.Contracts;
+using InHouseCS2.Core.Managers.Contracts.Models;
+using InHouseCS2.Core.Managers.Models;
 using Microsoft.Extensions.Logging;
 
 namespace InHouseCS2.Core.Managers;
@@ -23,6 +25,11 @@ public class UploadsManager : IUploadsManager
         this.matchUploadEntityStore = matchUploadEntityStore;
         this.parseMatchTaskEntityStore = parseMatchTaskEntityStore;
         this.logger = logger;
+    }
+
+    public Task FinalizeMatchUploadEntityAndRecordData(CoreMatchDataRecord coreMatchDataRecord)
+    {
+        throw new NotImplementedException();
     }
 
     public async Task<string> GetMatchUploadStatus(int id)
