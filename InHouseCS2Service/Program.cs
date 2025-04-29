@@ -9,7 +9,6 @@ using Microsoft.EntityFrameworkCore;
 using InHouseCS2.Core.EntityStores.Models;
 using InHouseCS2.Core.EntityStores;
 using InHouseCS2.Core.EntityStores.Contracts;
-using Microsoft.Extensions.DependencyInjection;
 using InHouseCS2Service;
 
 Env.Load();
@@ -57,6 +56,15 @@ if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
+}
+
+using (var scope = app.Services.CreateScope())
+{
+    var services = scope.ServiceProvider;
+
+    var context = services.GetRequiredService<AzureSqlDbContext>();
+    context.Database.EnsureCreated();
+    // DbInitializer.Initialize(context);
 }
 
 app.UseHttpsRedirection();

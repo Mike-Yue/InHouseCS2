@@ -28,11 +28,20 @@ namespace InHouseCS2Service
 
                 foreach (var work in pendingWork)
                 {
-                    await matchParserEntityStore.Update(work.Id, (entity) =>
+                    try
                     {
-                        entity.Status = ParseMatchTaskStatus.Parsing;
-                    });
-                    await this.SendToMatchParserService(work);
+                        await matchParserEntityStore.Update(work.Id, (entity) =>
+                        {
+                            entity.Status = ParseMatchTaskStatus.Parsing;
+                        });
+                        await this.SendToMatchParserService(work);
+                    }
+                    catch (InvalidOperationException ex)
+                    {
+                        this.logger.LogCritical($"Starting Match Parser work failed with {ex.Message}");
+                        continue;
+                    }
+
                 }
                 await Task.Delay(30000, stoppingToken);
             }

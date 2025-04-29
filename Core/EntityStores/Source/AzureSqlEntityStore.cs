@@ -1,7 +1,6 @@
 ﻿using InHouseCS2.Core.EntityStores.Contracts;
 using InHouseCS2.Core.EntityStores.Models;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Metadata.Internal;
+using Microsoft.EntityFrameworkCore; 
 using System.Linq.Expressions;
 
 namespace InHouseCS2.Core.EntityStores;
