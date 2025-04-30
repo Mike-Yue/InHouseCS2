@@ -35,6 +35,7 @@ namespace InHouseCS2Service
                         await matchParserEntityStore.Update(work.Id, (entity) =>
                         {
                             entity.Status = MatchUploadStatus.Processing;
+                            entity.LastUpdatedAt = DateTime.UtcNow;
                         });
                     }
                     catch (InvalidOperationException ex)

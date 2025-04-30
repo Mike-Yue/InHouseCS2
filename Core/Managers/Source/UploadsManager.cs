@@ -38,6 +38,11 @@ public class UploadsManager : IUploadsManager
 
     public async Task FinalizeMatchUploadEntityAndRecordData(int matchUploadId, CoreMatchDataRecord coreMatchDataRecord)
     {
+        await this.matchUploadEntityStore.Update(matchUploadId, (entity) =>
+        {
+            entity.Status = MatchUploadStatus.Processed;
+            entity.LastUpdatedAt = DateTime.Now;
+        });
 
         var match = await this.matchEntityStore.Create(() =>
         {
@@ -110,6 +115,12 @@ public class UploadsManager : IUploadsManager
                 };
             });
         }
+
+        await this.matchUploadEntityStore.Update(matchUploadId, (entity) =>
+        {
+            entity.Status = MatchUploadStatus.Completed;
+            entity.LastUpdatedAt = DateTime.Now;
+        });
     }
 
     public async Task<string> GetMatchUploadStatus(int id)
