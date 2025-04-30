@@ -1,6 +1,6 @@
 ﻿using InHouseCS2.Core.Clients.Contracts;
 using InHouseCS2.Core.EntityStores.Contracts;
-using InHouseCS2.Core.EntityStores.Models;
+using InHouseCS2.Core.EntityStores.Contracts.Models;
 using InHouseCS2.Core.Managers.Contracts;
 using InHouseCS2.Core.Managers.Contracts.Models;
 using InHouseCS2.Core.Managers.Models;
@@ -16,6 +16,7 @@ public class UploadsManager : IUploadsManager
     private readonly IEntityStore<PlayerEntity> playerEntityStore;
     private readonly IEntityStore<PlayerMatchStatEntity> playerMatchStatEntityStore;
     private readonly IEntityStore<KillEventEntity> killEventEntityStore;
+    private readonly ITransactionOperation transactionOperation;
     private readonly ILogger<UploadsManager> logger;
 
     public UploadsManager(
@@ -25,6 +26,7 @@ public class UploadsManager : IUploadsManager
         IEntityStore<PlayerEntity> playerEntityStore,
         IEntityStore<PlayerMatchStatEntity> playerMatchStatEntityStore,
         IEntityStore<KillEventEntity> killEventEntityStore,
+        ITransactionOperation transacationOperation,
         ILogger<UploadsManager> logger)
     {
         this.mediaStorageClient = mediaStorageClient;
@@ -33,6 +35,7 @@ public class UploadsManager : IUploadsManager
         this.playerEntityStore = playerEntityStore;
         this.playerMatchStatEntityStore = playerMatchStatEntityStore;
         this.killEventEntityStore = killEventEntityStore;
+        this.transactionOperation = transacationOperation;
         this.logger = logger;
     }
 
@@ -125,8 +128,28 @@ public class UploadsManager : IUploadsManager
 
     public async Task<string> GetMatchUploadStatus(int id)
     {
-        var matchUpload = await this.matchUploadEntityStore.Get(id);
-        return matchUpload.CreatedAt.ToString();
+        await this.transactionOperation.ExecuteOperationInTransactionAsync(async (operation) =>
+        {
+            var playerStore = operation.GetEntityStore<PlayerEntity>();
+            var seasonStore = operation.GetEntityStore<SeasonEntity>();
+            await playerStore.Create(() =>
+            {
+                return new PlayerEntity
+                {
+                    SteamId = 123456
+                };
+            });
+            throw new Exception("Test exception");
+            await seasonStore.Create(() =>
+            {
+                return new SeasonEntity
+                {
+                    Name = "Test1"
+                };
+            });
+
+        });
+        return "123";
     }
 
     public async Task<UploadMetaData?> GetUploadURL(string fileFingerprint, string fileExtension)

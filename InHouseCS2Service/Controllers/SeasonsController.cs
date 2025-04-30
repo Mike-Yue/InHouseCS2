@@ -1,5 +1,5 @@
 ﻿using InHouseCS2.Core.EntityStores.Contracts;
-using InHouseCS2.Core.EntityStores.Models;
+using InHouseCS2.Core.EntityStores.Contracts.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 

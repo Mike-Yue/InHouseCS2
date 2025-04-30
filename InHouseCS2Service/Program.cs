@@ -6,10 +6,10 @@ using InHouseCS2.Core.Managers;
 using InHouseCS2.Core.Managers.Contracts;
 using DotNetEnv;
 using Microsoft.EntityFrameworkCore;
-using InHouseCS2.Core.EntityStores.Models;
 using InHouseCS2.Core.EntityStores;
 using InHouseCS2.Core.EntityStores.Contracts;
 using InHouseCS2Service;
+using InHouseCS2.Core.EntityStores.Contracts.Models;
 
 Env.Load();
 
@@ -39,6 +39,7 @@ builder.Services.AddScoped<IMediaStorageClient>(serviceProvider =>
         serviceProvider.GetRequiredService<ILogger<AzureBlobStorageClient>>());
 });
 
+builder.Services.AddScoped(typeof(ITransactionOperation), typeof(AzureSqlTransactionOperation));
 builder.Services.AddScoped(typeof(IEntityStore<MatchUploadEntity>), typeof(AzureSqlEntityStore<MatchUploadEntity>));
 builder.Services.AddScoped(typeof(IEntityStore<SeasonEntity>), typeof(AzureSqlEntityStore<SeasonEntity>));
 builder.Services.AddScoped(typeof(IEntityStore<MatchEntity>), typeof(AzureSqlEntityStore<MatchEntity>));
@@ -55,6 +56,7 @@ builder.Services.AddScoped<IUploadsManager>(serviceProvider =>
         serviceProvider.GetRequiredService<IEntityStore<PlayerEntity>>(),
         serviceProvider.GetRequiredService<IEntityStore<PlayerMatchStatEntity>>(),
         serviceProvider.GetRequiredService<IEntityStore<KillEventEntity>>(),
+        serviceProvider.GetRequiredService<ITransactionOperation>(),
         serviceProvider.GetRequiredService<ILogger<UploadsManager>>());
 });
 

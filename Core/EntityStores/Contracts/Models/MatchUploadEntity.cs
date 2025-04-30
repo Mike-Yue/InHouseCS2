@@ -1,6 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 
-namespace InHouseCS2.Core.EntityStores.Models;
+namespace InHouseCS2.Core.EntityStores.Contracts.Models;
 
 [Index(nameof(Status))]
 public class MatchUploadEntity : BaseEntity

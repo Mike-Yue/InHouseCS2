@@ -1,8 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
 using System.ComponentModel.DataAnnotations;
 
-namespace InHouseCS2.Core.EntityStores.Models;
-
+namespace InHouseCS2.Core.EntityStores.Contracts.Models;
 public class PlayerEntity : BaseEntity
 {
     public required long SteamId { get; set; }

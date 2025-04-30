@@ -1,4 +1,4 @@
-﻿using InHouseCS2.Core.EntityStores.Models;
+﻿using InHouseCS2.Core.EntityStores.Contracts.Models;
 using Microsoft.EntityFrameworkCore;
 using System.Reflection;
 using System.Text.RegularExpressions;

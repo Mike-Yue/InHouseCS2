@@ -1,4 +1,4 @@
-﻿namespace InHouseCS2.Core.EntityStores.Models;
+﻿namespace InHouseCS2.Core.EntityStores.Contracts.Models;
 
 public enum MatchUploadStatus
 {

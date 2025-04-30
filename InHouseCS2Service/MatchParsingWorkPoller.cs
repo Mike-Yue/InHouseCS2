@@ -1,6 +1,6 @@
 ﻿
 using InHouseCS2.Core.EntityStores.Contracts;
-using InHouseCS2.Core.EntityStores.Models;
+using InHouseCS2.Core.EntityStores.Contracts.Models;
 
 namespace InHouseCS2Service
 {
