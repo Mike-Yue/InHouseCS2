@@ -22,19 +22,20 @@ namespace InHouseCS2Service
             while (!stoppingToken.IsCancellationRequested)
             {
                 using var scope = this.scopeFactory.CreateScope();
-                var matchParserEntityStore = scope.ServiceProvider.GetRequiredService<IEntityStore<ParseMatchTaskEntity>>();
+                var matchParserEntityStore = scope.ServiceProvider.GetRequiredService<IEntityStore<MatchUploadEntity>>();
 
-                var pendingWork = await matchParserEntityStore.FindAll((x) => x.Status == ParseMatchTaskStatus.Initialized);
+                var pendingWork = await matchParserEntityStore.FindAll((x) => x.Status == MatchUploadStatus.Uploaded);
 
                 foreach (var work in pendingWork)
                 {
                     try
                     {
+                        // Sending the work twice is ok, the webhook Uri MatchParserService updates will be idempotent
+                        await this.SendToMatchParserService(work);
                         await matchParserEntityStore.Update(work.Id, (entity) =>
                         {
-                            entity.Status = ParseMatchTaskStatus.Parsing;
+                            entity.Status = MatchUploadStatus.Processing;
                         });
-                        await this.SendToMatchParserService(work);
                     }
                     catch (InvalidOperationException ex)
                     {
@@ -48,10 +49,10 @@ namespace InHouseCS2Service
             this.logger.LogInformation("Polling service stopped");
         }
 
-        private async Task SendToMatchParserService(ParseMatchTaskEntity task)
+        private async Task SendToMatchParserService(MatchUploadEntity task)
         {
             this.logger.LogInformation($"Executing work on {task.Id}");
-            var associatedMatchUploadId = task.MatchUploadEntityId;
+            var associatedMatchUploadId = task.Id;
             // Get Presigned URL and associatedMatchUploadId and send to Match service
             await Task.CompletedTask;
         }

@@ -3,6 +3,7 @@ using InHouseCS2.Core.Managers.Contracts;
 using InHouseCS2.Core.Managers.Models;
 using InHouseCS2Service.Controllers.Models;
 using Microsoft.AspNetCore.Mvc;
+using System.Threading.Tasks;
 
 namespace InHouseCS2Service.Controllers
 {
@@ -45,11 +46,11 @@ namespace InHouseCS2Service.Controllers
         }
 
         [HttpPost("{matchUploadId}")]
-        public string PostMatchUploadId(string matchUploadId, [FromBody] MatchDataObject matchDataObject)
+        public async Task<IActionResult> PostMatchUploadId(string matchUploadId, [FromBody] MatchDataObject matchDataObject)
         {
             var output = this.mapper.Map<CoreMatchDataRecord>(matchDataObject);
-            this.logger.LogInformation(output.MatchMetadata.Map);
-            return matchUploadId;
+            await this.uploadsManager.FinalizeMatchUploadEntityAndRecordData(output);
+            return this.Ok();
         }
 
         [HttpGet("{matchUploadId}")]

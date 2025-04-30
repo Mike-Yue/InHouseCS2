@@ -1,5 +1,8 @@
-﻿namespace InHouseCS2.Core.EntityStores.Models;
+﻿using Microsoft.EntityFrameworkCore;
 
+namespace InHouseCS2.Core.EntityStores.Models;
+
+[Index(nameof(Status))]
 public class MatchUploadEntity : BaseEntity
 {
     public MatchUploadStatus Status { get; set; }
@@ -13,6 +16,4 @@ public class MatchUploadEntity : BaseEntity
     public string? ErrorMessage { get; set; }
 
     public DateTime LastUpdatedAt { get; set; }
-
-    public ICollection<ParseMatchTaskEntity>? ParseMatchTasks { get; }
 }

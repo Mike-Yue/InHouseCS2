@@ -12,18 +12,15 @@ public class UploadsManager : IUploadsManager
 {
     private readonly IMediaStorageClient mediaStorageClient;
     private readonly IEntityStore<MatchUploadEntity> matchUploadEntityStore;
-    private readonly IEntityStore<ParseMatchTaskEntity> parseMatchTaskEntityStore;
     private readonly ILogger<UploadsManager> logger;
 
     public UploadsManager(
         IMediaStorageClient mediaStorageClient,
         IEntityStore<MatchUploadEntity> matchUploadEntityStore,
-        IEntityStore<ParseMatchTaskEntity> parseMatchTaskEntityStore,
         ILogger<UploadsManager> logger)
     {
         this.mediaStorageClient = mediaStorageClient;
         this.matchUploadEntityStore = matchUploadEntityStore;
-        this.parseMatchTaskEntityStore = parseMatchTaskEntityStore;
         this.logger = logger;
     }
 
@@ -40,7 +37,7 @@ public class UploadsManager : IUploadsManager
 
     public async Task<UploadMetaData?> GetUploadURL(string fileFingerprint, string fileExtension)
     {
-        var filesWithSameFingerPrint = await this.matchUploadEntityStore.FindAll((x) => x.DemoFingerprint == fileFingerprint);
+        var filesWithSameFingerPrint = await this.matchUploadEntityStore.FindAll((x) => x.DemoFingerprint == fileFingerprint && x.Status != MatchUploadStatus.FailedToUpload);
         if (filesWithSameFingerPrint.Count > 0)
         {
             return null;
@@ -75,29 +72,11 @@ public class UploadsManager : IUploadsManager
         if (entities.Count == 1)
         {
             this.logger.LogInformation("1 entity found. Working");
+
             await this.matchUploadEntityStore.Update(entities[0].Id, (matchUploadEntity) =>
             {
                 matchUploadEntity.Status = MatchUploadStatus.Uploaded;
             });
-
-            // Get all currently recorded matchParse tasks for this matchUploadId
-            // If any are in a valid state (not failed) then we don't do anything
-            var parseMatchTasks = await this.parseMatchTaskEntityStore
-                .FindAll((x) => x.MatchUploadEntityId == entities[0].Id && x.Status != ParseMatchTaskStatus.Failed);
-
-            if (parseMatchTasks.Count == 0)
-            {
-                await this.parseMatchTaskEntityStore.Create(() =>
-                {
-                    return new ParseMatchTaskEntity
-                    {
-                        DemoMediaStoreUri = mediaStorageUri,
-                        Status = ParseMatchTaskStatus.Initialized,
-                        MatchUploadEntityId = entities[0].Id,
-                        MatchUploadEntity = entities[0]
-                    };
-                });
-            }
         }
         else
         {

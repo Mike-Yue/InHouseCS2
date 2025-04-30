@@ -5,7 +5,6 @@ public enum MatchUploadStatus
     Initialized,
     FailedToUpload,
     Uploaded,
-    Duplicate,
     Processing,
     FailedToProcess,
     Processed,

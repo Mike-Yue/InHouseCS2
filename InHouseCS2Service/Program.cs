@@ -40,13 +40,11 @@ builder.Services.AddScoped<IMediaStorageClient>(serviceProvider =>
 });
 
 builder.Services.AddScoped(typeof(IEntityStore<MatchUploadEntity>), typeof(AzureSqlEntityStore<MatchUploadEntity>));
-builder.Services.AddScoped(typeof(IEntityStore<ParseMatchTaskEntity>), typeof(AzureSqlEntityStore<ParseMatchTaskEntity>));
 builder.Services.AddScoped<IUploadsManager>(serviceProvider =>
 {
     return new UploadsManager(
         serviceProvider.GetRequiredService<IMediaStorageClient>(),
         serviceProvider.GetRequiredService<IEntityStore<MatchUploadEntity>>(),
-        serviceProvider.GetRequiredService<IEntityStore<ParseMatchTaskEntity>>(),
         serviceProvider.GetRequiredService<ILogger<UploadsManager>>());
 });
 
