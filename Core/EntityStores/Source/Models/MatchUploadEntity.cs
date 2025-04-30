@@ -16,4 +16,5 @@ public class MatchUploadEntity : BaseEntity
     public string? ErrorMessage { get; set; }
 
     public DateTime LastUpdatedAt { get; set; }
+    public MatchEntity? Match { get; set; }
 }

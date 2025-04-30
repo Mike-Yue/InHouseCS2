@@ -40,11 +40,21 @@ builder.Services.AddScoped<IMediaStorageClient>(serviceProvider =>
 });
 
 builder.Services.AddScoped(typeof(IEntityStore<MatchUploadEntity>), typeof(AzureSqlEntityStore<MatchUploadEntity>));
+builder.Services.AddScoped(typeof(IEntityStore<SeasonEntity>), typeof(AzureSqlEntityStore<SeasonEntity>));
+builder.Services.AddScoped(typeof(IEntityStore<MatchEntity>), typeof(AzureSqlEntityStore<MatchEntity>));
+builder.Services.AddScoped(typeof(IEntityStore<PlayerEntity>), typeof(AzureSqlEntityStore<PlayerEntity>));
+builder.Services.AddScoped(typeof(IEntityStore<KillEventEntity>), typeof(AzureSqlEntityStore<KillEventEntity>));
+builder.Services.AddScoped(typeof(IEntityStore<PlayerMatchStatEntity>), typeof(AzureSqlEntityStore<PlayerMatchStatEntity>));
+
 builder.Services.AddScoped<IUploadsManager>(serviceProvider =>
 {
     return new UploadsManager(
         serviceProvider.GetRequiredService<IMediaStorageClient>(),
         serviceProvider.GetRequiredService<IEntityStore<MatchUploadEntity>>(),
+        serviceProvider.GetRequiredService<IEntityStore<MatchEntity>>(),
+        serviceProvider.GetRequiredService<IEntityStore<PlayerEntity>>(),
+        serviceProvider.GetRequiredService<IEntityStore<PlayerMatchStatEntity>>(),
+        serviceProvider.GetRequiredService<IEntityStore<KillEventEntity>>(),
         serviceProvider.GetRequiredService<ILogger<UploadsManager>>());
 });
 

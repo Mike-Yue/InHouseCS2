@@ -12,21 +12,104 @@ public class UploadsManager : IUploadsManager
 {
     private readonly IMediaStorageClient mediaStorageClient;
     private readonly IEntityStore<MatchUploadEntity> matchUploadEntityStore;
+    private readonly IEntityStore<MatchEntity> matchEntityStore;
+    private readonly IEntityStore<PlayerEntity> playerEntityStore;
+    private readonly IEntityStore<PlayerMatchStatEntity> playerMatchStatEntityStore;
+    private readonly IEntityStore<KillEventEntity> killEventEntityStore;
     private readonly ILogger<UploadsManager> logger;
 
     public UploadsManager(
         IMediaStorageClient mediaStorageClient,
         IEntityStore<MatchUploadEntity> matchUploadEntityStore,
+        IEntityStore<MatchEntity> matchEntityStore,
+        IEntityStore<PlayerEntity> playerEntityStore,
+        IEntityStore<PlayerMatchStatEntity> playerMatchStatEntityStore,
+        IEntityStore<KillEventEntity> killEventEntityStore,
         ILogger<UploadsManager> logger)
     {
         this.mediaStorageClient = mediaStorageClient;
         this.matchUploadEntityStore = matchUploadEntityStore;
+        this.matchEntityStore = matchEntityStore;
+        this.playerEntityStore = playerEntityStore;
+        this.playerMatchStatEntityStore = playerMatchStatEntityStore;
+        this.killEventEntityStore = killEventEntityStore;
         this.logger = logger;
     }
 
-    public Task FinalizeMatchUploadEntityAndRecordData(CoreMatchDataRecord coreMatchDataRecord)
+    public async Task FinalizeMatchUploadEntityAndRecordData(int matchUploadId, CoreMatchDataRecord coreMatchDataRecord)
     {
-        throw new NotImplementedException();
+
+        var match = await this.matchEntityStore.Create(() =>
+        {
+            return new MatchEntity
+            {
+                Map = coreMatchDataRecord.MatchMetadata.Map,
+                WinScore = coreMatchDataRecord.MatchMetadata.WinningScore,
+                LoseScore = coreMatchDataRecord.MatchMetadata.LosingScore,
+                MatchUploadEntityId = matchUploadId,
+                SeasonEntityId = 1
+            };
+        });
+
+        foreach (var entry in coreMatchDataRecord.MatchStatPerPlayers)
+        {
+            var playerEntity = await this.playerEntityStore.FindOnly((x) => x.SteamId == Convert.ToInt64(entry.SteamId));
+            if (playerEntity is null)
+            {
+                playerEntity = await this.playerEntityStore.Create(() =>
+                {
+                    return new PlayerEntity
+                    {
+                        SteamId = Convert.ToInt64(entry.SteamId),
+                        Elo = 1000
+                    };
+                });
+            }
+            await this.playerMatchStatEntityStore.Create(() =>
+            {
+                return new PlayerMatchStatEntity
+                {
+                    PlayerId = playerEntity.Id,
+                    MatchId = match.Id,
+                    Kills = entry.Kills,
+                    DamageAssists = entry.DamageAssists,
+                    Deaths = entry.Deaths,
+                    DamageDealt = entry.DamageDealt,
+                    Mvps = entry.Mvps,
+                    HeadshotPercentage = entry.HeadshotPercentage,
+                    HeadshotKillPercentage = entry.HeadshotKillPercentage,
+                    FlashAssists = entry.FlashAssists,
+                    EnemiesFlashed = entry.EnemiesFlashed,
+                    HighExplosiveGrenadeDamage = entry.HighExplosiveGrenadeDamage,
+                    FireGrenadeDamage = entry.FireGrenadeDamage,
+                    WonMatch = entry.WonMatch,
+                    StartingTeam = entry.StartingTeam
+                };
+            });
+        }
+
+        foreach (var entry in coreMatchDataRecord.MatchKills)
+        {
+            var killer = await this.playerEntityStore.FindOnly((x) => x.SteamId == Convert.ToInt64(entry.KillerSteamId));
+            var victim = await this.playerEntityStore.FindOnly((x) => x.SteamId == Convert.ToInt64(entry.VictimSteamId));
+            await this.killEventEntityStore.Create(() =>
+            {
+                return new KillEventEntity
+                {
+                    KillerId = killer!.Id,
+                    VictimId = victim!.Id,
+                    MatchId = match.Id,
+                    Weapon = entry.WeaponUsed,
+                    Headshot = entry.Headshot,
+                    Wallbang = entry.Wallbang,
+                    NoScope = entry.NoScope,
+                    ThroughSmoke = entry.ThroughSmoke,
+                    Midair = entry.Midair,
+                    AttackerBlind = entry.KillerFlashed,
+                    VictimBlind = entry.VictimFlashed
+                };
+            });
+        }
     }
 
     public async Task<string> GetMatchUploadStatus(int id)
@@ -45,7 +128,7 @@ public class UploadsManager : IUploadsManager
 
         var uploadInfo = this.mediaStorageClient.GetUploadUrl(fileExtension, 1);
 
-        var id = await this.matchUploadEntityStore.Create(() =>
+        var matchUploadEntity = await this.matchUploadEntityStore.Create(() =>
         {
             var newMatchUpload = new MatchUploadEntity
             {
@@ -57,7 +140,7 @@ public class UploadsManager : IUploadsManager
             };
             return newMatchUpload;
         });
-        return new UploadMetaData(uploadInfo.uploadUri, id);
+        return new UploadMetaData(uploadInfo.uploadUri, matchUploadEntity.Id);
     }
 
     public async Task UpdateMatchStatusAndPersistWork(Uri mediaStorageUri)

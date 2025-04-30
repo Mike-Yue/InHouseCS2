@@ -1,0 +1,20 @@
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace InHouseCS2.Core.EntityStores.Models;
+
+public class MatchEntity : BaseEntity
+{
+    public required string Map { get; set; }
+    public DateTime DatePlayed { get; set; }
+
+    public int WinScore { get; set; }
+    public int LoseScore { get; set; }
+    public int MatchUploadEntityId { get; set; }
+    public MatchUploadEntity MatchUpload { get; set; } = null!;
+
+    public ICollection<PlayerMatchStatEntity> PlayerMatchStats { get; set; } = new List<PlayerMatchStatEntity>();
+    public ICollection<KillEventEntity> KillEvents { get; set; } = new List<KillEventEntity>();
+
+    public int SeasonEntityId { get; set; }
+    public SeasonEntity Season { get; set; } = null!;
+}

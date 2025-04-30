@@ -1,6 +1,6 @@
 ﻿using InHouseCS2.Core.EntityStores.Contracts;
 using InHouseCS2.Core.EntityStores.Models;
-using Microsoft.EntityFrameworkCore; 
+using Microsoft.EntityFrameworkCore;
 using System.Linq.Expressions;
 
 namespace InHouseCS2.Core.EntityStores;
@@ -15,13 +15,12 @@ public class AzureSqlEntityStore<T> : IEntityStore<T> where T : BaseEntity
         this.dbSet = this.dbContext.Set<T>();
     }
 
-    public Task<int> Create(Func<T> createFunc)
+    public async Task<T> Create(Func<T> createFunc)
     {
         var entity = createFunc();
         this.dbContext.Add(entity);
-        this.dbContext.SaveChanges();
-        var id = entity.Id;
-        return Task.FromResult(id);
+        await this.dbContext.SaveChangesAsync();
+        return entity;
     }
 
     public Task Delete(int id)
@@ -34,20 +33,17 @@ public class AzureSqlEntityStore<T> : IEntityStore<T> where T : BaseEntity
         return await this.dbSet.Where(filterFunc).ToListAsync();
     }
 
-    public async Task<T> Get(int id)
+    public async Task<T?> FindOnly(Expression<Func<T, bool>> filterFunc)
     {
-        T? entity = await this.dbSet.FindAsync(id);
-        if (entity == null)
-        {
-            throw new Exception($"Entity with Id {id} not found");
-        }
-        else
-        {
-            return entity;
-        }
+        return await this.dbSet.Where(filterFunc).SingleOrDefaultAsync();
     }
 
-    public async Task<int> Update(int id, Action<T> updateFunc)
+    public async Task<T?> Get(int id)
+    {
+        return await this.dbSet.FindAsync(id);
+    }
+
+    public async Task<T> Update(int id, Action<T> updateFunc)
     {
         var entity = await this.dbSet.FindAsync(id);
         if (entity == null)
@@ -65,7 +61,7 @@ public class AzureSqlEntityStore<T> : IEntityStore<T> where T : BaseEntity
         {
             throw new InvalidOperationException($"Update failed due to a concurrency conflict.", ex);
         }
-        
-        return entity.Id;
+
+        return entity;
     }
 }
