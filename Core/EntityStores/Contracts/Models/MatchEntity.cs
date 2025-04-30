@@ -1,9 +1,13 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace InHouseCS2.Core.EntityStores.Contracts.Models;
 
 public class MatchEntity : BaseEntity
 {
+    [Key]
+    [DatabaseGenerated(DatabaseGeneratedOption.None)]
+    public required string DemoFileHash { get; set; }
     public required string Map { get; set; }
     public DateTime DatePlayed { get; set; }
 

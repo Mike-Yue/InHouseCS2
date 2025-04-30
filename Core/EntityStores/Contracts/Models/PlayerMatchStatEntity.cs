@@ -1,11 +1,15 @@
-﻿namespace InHouseCS2.Core.EntityStores.Contracts.Models;
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace InHouseCS2.Core.EntityStores.Contracts.Models;
 
 public class PlayerMatchStatEntity : BaseEntity
 {
-    public required int PlayerId { get; set; }
+    [Key]
+    public int Id { get; set; }
+    public required long PlayerId { get; set; }
     public PlayerEntity Player { get; set; } = null!;
 
-    public required int MatchId { get; set; }
+    public required string MatchId { get; set; }
     public MatchEntity Match { get; set; } = null!;
 
     // Individual skill stats

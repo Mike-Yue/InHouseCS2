@@ -41,7 +41,7 @@ public class UploadsManager : IUploadsManager
 
     public async Task FinalizeMatchUploadEntityAndRecordData(int matchUploadId, CoreMatchDataRecord coreMatchDataRecord)
     {
-        await this.matchUploadEntityStore.Update(matchUploadId, (entity) =>
+        var matchUploadEntity = await this.matchUploadEntityStore.Update(matchUploadId, (entity) =>
         {
             entity.Status = MatchUploadStatus.Processed;
             entity.LastUpdatedAt = DateTime.Now;
@@ -51,6 +51,7 @@ public class UploadsManager : IUploadsManager
         {
             return new MatchEntity
             {
+                DemoFileHash = matchUploadEntity.DemoFingerprint,
                 Map = coreMatchDataRecord.MatchMetadata.Map,
                 WinScore = coreMatchDataRecord.MatchMetadata.WinningScore,
                 LoseScore = coreMatchDataRecord.MatchMetadata.LosingScore,
@@ -77,8 +78,8 @@ public class UploadsManager : IUploadsManager
             {
                 return new PlayerMatchStatEntity
                 {
-                    PlayerId = playerEntity.Id,
-                    MatchId = match.Id,
+                    PlayerId = playerEntity.SteamId,
+                    MatchId = match.DemoFileHash,
                     Kills = entry.Kills,
                     DamageAssists = entry.DamageAssists,
                     Deaths = entry.Deaths,
@@ -104,9 +105,9 @@ public class UploadsManager : IUploadsManager
             {
                 return new KillEventEntity
                 {
-                    KillerId = killer!.Id,
-                    VictimId = victim!.Id,
-                    MatchId = match.Id,
+                    KillerId = killer!.SteamId,
+                    VictimId = victim!.SteamId,
+                    MatchId = match.DemoFileHash,
                     Weapon = entry.WeaponUsed,
                     Headshot = entry.Headshot,
                     Wallbang = entry.Wallbang,

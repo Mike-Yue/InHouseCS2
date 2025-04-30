@@ -50,6 +50,10 @@ namespace InHouseCS2.Core.EntityStores
                 .WithMany(m => m.PlayerMatchStats)
                 .HasForeignKey(pms => pms.MatchId);
 
+            modelBuilder.Entity<PlayerMatchStatEntity>()
+                .HasIndex(k => new { k.PlayerId, k.MatchId })
+                .IsUnique();
+
             // KillEvent → Player (Killer)
             modelBuilder.Entity<KillEventEntity>()
                 .HasOne(ke => ke.Killer)
@@ -71,9 +75,11 @@ namespace InHouseCS2.Core.EntityStores
                 .HasForeignKey(ke => ke.MatchId)
                 .OnDelete(DeleteBehavior.Cascade);
 
-            modelBuilder.Entity<PlayerEntity>()
-                .HasIndex(pe => pe.SteamId)
+            modelBuilder.Entity<KillEventEntity>()
+                .HasIndex(k => new { k.KillerId, k.VictimId, k.MatchId })
                 .IsUnique();
+
+            modelBuilder.Entity<PlayerEntity>();
         }
     }
 }

@@ -4,6 +4,8 @@ namespace InHouseCS2.Core.EntityStores.Contracts.Models;
 
 public class SeasonEntity : BaseEntity
 {
+    [Key]
+    public int Id { get; set; }
     public required string Name { get; set; }
     public DateTime StartDate { get; set; }
     public DateTime EndDate { get; set; }

@@ -1,14 +1,18 @@
-﻿namespace InHouseCS2.Core.EntityStores.Contracts.Models;
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace InHouseCS2.Core.EntityStores.Contracts.Models;
 
 public class KillEventEntity : BaseEntity
 {
-    public int KillerId { get; set; }
+    [Key]
+    public int Id { get; set; }
+    public required long KillerId { get; set; }
     public PlayerEntity Killer { get; set; } = null!;
 
-    public int VictimId { get; set; }
+    public required long VictimId { get; set; }
     public PlayerEntity Victim { get; set; } = null!;
 
-    public int MatchId { get; set; }
+    public required string MatchId { get; set; }
     public MatchEntity Match { get; set; } = null!;
 
     public required string Weapon { get; set; }
