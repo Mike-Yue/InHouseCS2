@@ -4,7 +4,7 @@ using FluentAssertions;
 using InHouseCS2.Core.Clients.Contracts;
 using InHouseCS2.Core.Common;
 using InHouseCS2.Core.EntityStores.Contracts;
-using InHouseCS2.Core.EntityStores.Models;
+using InHouseCS2.Core.EntityStores.Contracts.Models;
 using Microsoft.Extensions.Logging;
 using Moq;
 using System.Linq.Expressions;
@@ -23,10 +23,15 @@ public sealed class UploadsManagerTests
             {
                 Id = 1,
                 DemoFingerprint = fingerprint,
+                Status = MatchUploadStatus.Initialized,
             }
         };
 
         // Mocks
+        uploadsManagerFixture.mockTransactionOperation
+            .Setup(s => s.GetEntityStore<MatchUploadEntity, int>())
+            .Returns(uploadsManagerFixture.mockMatchUploadEntityStore.Object);
+
         uploadsManagerFixture.mockMatchUploadEntityStore
             .Setup(s => s.FindAll(It.IsAny<Expression<Func<MatchUploadEntity, bool>>>()))
             .ReturnsAsync(entities);
@@ -47,8 +52,16 @@ public sealed class UploadsManagerTests
         var uploadUri = new Uri("https://uploadUrl.com");
         var mediaUri = new Uri("https://mediaUrl.com");
         var fingerprint = "fingerprint123";
+        var matchUploadEntity = new MatchUploadEntity
+        {
+            DemoFingerprint = fingerprint,
+            Id = 1,
+        };
 
         // Mocks
+        uploadsManagerFixture.mockTransactionOperation
+            .Setup(s => s.GetEntityStore<MatchUploadEntity, int>())
+            .Returns(uploadsManagerFixture.mockMatchUploadEntityStore.Object);
         uploadsManagerFixture.mockMatchUploadEntityStore
             .Setup(s => s.FindAll(It.IsAny<Expression<Func<MatchUploadEntity, bool>>>()))
             .ReturnsAsync(new List<MatchUploadEntity>());
@@ -67,7 +80,7 @@ public sealed class UploadsManagerTests
                 entity.CreatedAt.Should().NotBe(null);
                 entity.LastUpdatedAt.Should().NotBe(null);
             })
-            .ReturnsAsync(1);
+            .ReturnsAsync(matchUploadEntity);
 
         // Execute
         await uploadsManagerFixture.TestComponentAndVerifyMocksAsync(async s =>
@@ -75,7 +88,7 @@ public sealed class UploadsManagerTests
             var output = (await s.GetUploadURL(fingerprint, "dem"));
             output.Should().NotBeNull();
             output.uploadUri.Should().BeEquivalentTo(uploadUri);
-            output.id.Should().Be(1);
+            output.id.Should().Be(matchUploadEntity.Id);
         });
     }
 
@@ -86,6 +99,9 @@ public sealed class UploadsManagerTests
         var mediaUri = new Uri("https://mediaUrl.com");
 
         // Mocks
+        uploadsManagerFixture.mockTransactionOperation
+            .Setup(s => s.GetEntityStore<MatchUploadEntity, int>())
+            .Returns(uploadsManagerFixture.mockMatchUploadEntityStore.Object);
         uploadsManagerFixture.mockMatchUploadEntityStore
             .Setup(s => s.FindAll(It.IsAny<Expression<Func<MatchUploadEntity, bool>>>()))
             .ReturnsAsync(new List<MatchUploadEntity>());
@@ -96,10 +112,82 @@ public sealed class UploadsManagerTests
         });
     }
 
+    [TestMethod]
+    public async Task TestUpdateMatchStatusAndPersistWork_ShouldThrowExceptionIfMoreThanOneMatch()
+    {
+        var uploadsManagerFixture = new UploadsManagerTestFixture();
+        var mediaUri = new Uri("https://mediaUrl.com");
+
+        // Mocks
+        uploadsManagerFixture.mockTransactionOperation
+            .Setup(s => s.GetEntityStore<MatchUploadEntity, int>())
+            .Returns(uploadsManagerFixture.mockMatchUploadEntityStore.Object);
+        uploadsManagerFixture.mockMatchUploadEntityStore
+            .Setup(s => s.FindAll(It.IsAny<Expression<Func<MatchUploadEntity, bool>>>()))
+            .ReturnsAsync(new List<MatchUploadEntity>()
+            {
+                new MatchUploadEntity
+                {
+                    Id = 1,
+                    DemoFingerprint ="123"
+                },
+                new MatchUploadEntity
+                {
+                    Id = 2,
+                    DemoFingerprint ="123"
+                },
+            });
+
+        await uploadsManagerFixture.TestComponentAndVerifyMocksAsync(s =>
+        {
+            Func<Task> act = async () => await s.UpdateMatchStatusAndPersistWork(mediaUri);
+            act.Should().ThrowAsync<Exception>().WithMessage("Multiple rows found with the same media storage Uri");
+            return Task.CompletedTask;
+        });
+    }
+
+    [TestMethod]
+    public async Task TestUpdateMatchStatusAndPersistWork_ShouldSucceed()
+    {
+        var uploadsManagerFixture = new UploadsManagerTestFixture();
+        var mediaUri = new Uri("https://mediaUrl.com");
+        var matchingMatchUploadEntity = new MatchUploadEntity
+        {
+            Id = 1,
+            DemoFingerprint = "123"
+        };
+
+        // Mocks
+        uploadsManagerFixture.mockTransactionOperation
+            .Setup(s => s.GetEntityStore<MatchUploadEntity, int>())
+            .Returns(uploadsManagerFixture.mockMatchUploadEntityStore.Object);
+        uploadsManagerFixture.mockMatchUploadEntityStore
+            .Setup(s => s.FindAll(It.IsAny<Expression<Func<MatchUploadEntity, bool>>>()))
+            .ReturnsAsync(new List<MatchUploadEntity>()
+            {
+                matchingMatchUploadEntity
+            });
+        uploadsManagerFixture.mockMatchUploadEntityStore
+            .Setup(s => s.Update(matchingMatchUploadEntity.Id, It.IsAny<Action<MatchUploadEntity>>()))
+            .Callback<int, Action<MatchUploadEntity>>((id, action) =>
+            {
+                action(matchingMatchUploadEntity);
+                matchingMatchUploadEntity.Status.Should().Be(MatchUploadStatus.Uploaded);
+                matchingMatchUploadEntity.LastUpdatedAt.Should().NotBe(null);
+            })
+            .ReturnsAsync(matchingMatchUploadEntity);
+
+        await uploadsManagerFixture.TestComponentAndVerifyMocksAsync(async s =>
+        {
+            await s.UpdateMatchStatusAndPersistWork(mediaUri);
+        });
+    }
+
     private class UploadsManagerTestFixture : MockFixture<UploadsManager>
     {
         public Mock<IMediaStorageClient> mockMediaStorageClient = new(MockBehavior.Strict);
-        public Mock<IEntityStore<MatchUploadEntity>> mockMatchUploadEntityStore = new(MockBehavior.Strict);
+        public Mock<ITransactionOperation> mockTransactionOperation = new(MockBehavior.Strict);
+        public Mock<IEntityStore<MatchUploadEntity, int>> mockMatchUploadEntityStore = new(MockBehavior.Strict);
 
         public override UploadsManager SetSubject()
         {
@@ -107,15 +195,16 @@ public sealed class UploadsManagerTests
             var logger = loggerFactory.CreateLogger<UploadsManager>();
             return new UploadsManager(
                 mediaStorageClient: this.mockMediaStorageClient.Object,
-                matchUploadEntityStore: this.mockMatchUploadEntityStore.Object,
+                transacationOperation: this.mockTransactionOperation.Object,
                 logger: logger
                 );
         }
 
         public override void VerifyAll()
         {
-            this.mockMatchUploadEntityStore.VerifyAll();
+            this.mockTransactionOperation.VerifyAll();
             this.mockMediaStorageClient.VerifyAll();
+            this.mockMatchUploadEntityStore.VerifyAll();
         }
     }
 }

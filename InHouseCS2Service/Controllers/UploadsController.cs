@@ -1,6 +1,6 @@
 ﻿using AutoMapper;
 using InHouseCS2.Core.Managers.Contracts;
-using InHouseCS2.Core.Managers.Models;
+using InHouseCS2.Core.Managers.Contracts.Models;
 using InHouseCS2Service.Controllers.Models;
 using Microsoft.AspNetCore.Mvc;
 
@@ -45,9 +45,10 @@ namespace InHouseCS2Service.Controllers
         }
 
         [HttpPost("{matchUploadId}")]
-        public async Task<IActionResult> PostMatchUploadId(string matchUploadId, [FromBody] MatchDataObject matchDataObject)
+        public async Task<IActionResult> PostMatchUploadId(string matchUploadId, [FromBody] MatchDataWrapper matchDataWrapper)
         {
-            var output = this.mapper.Map<CoreMatchDataRecord>(matchDataObject);
+
+            var output = this.mapper.Map<CoreMatchDataWrapperRecord>(matchDataWrapper);
             await this.uploadsManager.FinalizeMatchUploadEntityAndRecordData(Int32.Parse(matchUploadId), output);
             return this.Ok();
         }

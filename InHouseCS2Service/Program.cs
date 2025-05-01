@@ -51,11 +51,6 @@ builder.Services.AddScoped<IUploadsManager>(serviceProvider =>
 {
     return new UploadsManager(
         serviceProvider.GetRequiredService<IMediaStorageClient>(),
-        serviceProvider.GetRequiredService<IEntityStore<MatchUploadEntity, int>>(),
-        serviceProvider.GetRequiredService<IEntityStore<MatchEntity, string>>(),
-        serviceProvider.GetRequiredService<IEntityStore<PlayerEntity, long>>(),
-        serviceProvider.GetRequiredService<IEntityStore<PlayerMatchStatEntity, int>>(),
-        serviceProvider.GetRequiredService<IEntityStore<KillEventEntity, int>>(),
         serviceProvider.GetRequiredService<ITransactionOperation>(),
         serviceProvider.GetRequiredService<ILogger<UploadsManager>>());
 });

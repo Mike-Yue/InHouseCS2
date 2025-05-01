@@ -3,7 +3,6 @@ using InHouseCS2.Core.EntityStores.Contracts;
 using InHouseCS2.Core.EntityStores.Contracts.Models;
 using InHouseCS2.Core.Managers.Contracts;
 using InHouseCS2.Core.Managers.Contracts.Models;
-using InHouseCS2.Core.Managers.Models;
 using Microsoft.Extensions.Logging;
 
 namespace InHouseCS2.Core.Managers;
@@ -11,151 +10,151 @@ namespace InHouseCS2.Core.Managers;
 public class UploadsManager : IUploadsManager
 {
     private readonly IMediaStorageClient mediaStorageClient;
-    private readonly IEntityStore<MatchUploadEntity, int> matchUploadEntityStore;
-    private readonly IEntityStore<MatchEntity, string> matchEntityStore;
-    private readonly IEntityStore<PlayerEntity, long> playerEntityStore;
-    private readonly IEntityStore<PlayerMatchStatEntity, int> playerMatchStatEntityStore;
-    private readonly IEntityStore<KillEventEntity, int> killEventEntityStore;
     private readonly ITransactionOperation transactionOperation;
     private readonly ILogger<UploadsManager> logger;
 
     public UploadsManager(
         IMediaStorageClient mediaStorageClient,
-        IEntityStore<MatchUploadEntity, int> matchUploadEntityStore,
-        IEntityStore<MatchEntity, string> matchEntityStore,
-        IEntityStore<PlayerEntity, long> playerEntityStore,
-        IEntityStore<PlayerMatchStatEntity, int> playerMatchStatEntityStore,
-        IEntityStore<KillEventEntity, int> killEventEntityStore,
         ITransactionOperation transacationOperation,
         ILogger<UploadsManager> logger)
     {
         this.mediaStorageClient = mediaStorageClient;
-        this.matchUploadEntityStore = matchUploadEntityStore;
-        this.matchEntityStore = matchEntityStore;
-        this.playerEntityStore = playerEntityStore;
-        this.playerMatchStatEntityStore = playerMatchStatEntityStore;
-        this.killEventEntityStore = killEventEntityStore;
         this.transactionOperation = transacationOperation;
         this.logger = logger;
     }
 
-    public async Task FinalizeMatchUploadEntityAndRecordData(int matchUploadId, CoreMatchDataRecord coreMatchDataRecord)
+    public async Task FinalizeMatchUploadEntityAndRecordData(int matchUploadId, CoreMatchDataWrapperRecord coreMatchDataWrapperRecord)
     {
-        var matchUploadEntity = await this.matchUploadEntityStore.Update(matchUploadId, (entity) =>
+        if (coreMatchDataWrapperRecord.FailedToParse)
         {
-            entity.Status = MatchUploadStatus.Processed;
-            entity.LastUpdatedAt = DateTime.Now;
-        });
-
-        var match = await this.matchEntityStore.Create(() =>
-        {
-            return new MatchEntity
+            await this.transactionOperation.ExecuteOperationInTransactionAsync(async (operation) =>
             {
-                DemoFileHash = matchUploadEntity.DemoFingerprint,
-                Map = coreMatchDataRecord.MatchMetadata.Map,
-                WinScore = coreMatchDataRecord.MatchMetadata.WinningScore,
-                LoseScore = coreMatchDataRecord.MatchMetadata.LosingScore,
-                MatchUploadEntityId = matchUploadId,
-                SeasonEntityId = 1
-            };
-        });
-
-        foreach (var entry in coreMatchDataRecord.MatchStatPerPlayers)
-        {
-            var playerEntity = await this.playerEntityStore.FindOnly((x) => x.SteamId == Convert.ToInt64(entry.SteamId));
-            if (playerEntity is null)
-            {
-                playerEntity = await this.playerEntityStore.Create(() =>
+                var matchUploadEntityStore = operation.GetEntityStore<MatchUploadEntity, int>();
+                var matchUploadEntity = await matchUploadEntityStore.Update(matchUploadId, (entity) =>
                 {
-                    return new PlayerEntity
+                    entity.Status = MatchUploadStatus.FailedToProcess;
+                    entity.LastUpdatedAt = DateTime.Now;
+                });
+            });
+            return;
+        }
+
+        if (coreMatchDataWrapperRecord.FailedToParse == false && coreMatchDataWrapperRecord.MatchDataObject is null)
+        {
+            throw new Exception("Cannot have empty MatchDataObject if FailedToParse is false");
+        }
+
+        var coreMatchDataRecord = coreMatchDataWrapperRecord.MatchDataObject!;
+        await this.transactionOperation.ExecuteOperationInTransactionAsync(async (operation) =>
+        {
+            var matchUploadEntityStore = operation.GetEntityStore<MatchUploadEntity, int>();
+            var matchEntityStore = operation.GetEntityStore<MatchEntity, string>();
+            var playerEntityStore = operation.GetEntityStore<PlayerEntity, long>();
+            var playerMatchStatEntityStore = operation.GetEntityStore<PlayerMatchStatEntity, int>();
+            var killEventEntityStore = operation.GetEntityStore<KillEventEntity, int>();
+
+            var matchUploadEntity = await matchUploadEntityStore.Update(matchUploadId, (entity) =>
+            {
+                entity.Status = MatchUploadStatus.Processed;
+                entity.LastUpdatedAt = DateTime.Now;
+            });
+
+            var match = await matchEntityStore.Create(() =>
+            {
+                return new MatchEntity
+                {
+                    DemoFileHash = matchUploadEntity.DemoFingerprint,
+                    Map = coreMatchDataRecord.MatchMetadata.Map,
+                    WinScore = coreMatchDataRecord.MatchMetadata.WinningScore,
+                    LoseScore = coreMatchDataRecord.MatchMetadata.LosingScore,
+                    MatchUploadEntityId = matchUploadId,
+                    SeasonEntityId = 1
+                };
+            });
+
+            foreach (var entry in coreMatchDataRecord.MatchStatPerPlayers)
+            {
+                var playerEntity = await playerEntityStore.FindOnly((x) => x.SteamId == Convert.ToInt64(entry.SteamId));
+                if (playerEntity is null)
+                {
+                    playerEntity = await playerEntityStore.Create(() =>
                     {
-                        SteamId = Convert.ToInt64(entry.SteamId),
-                        Elo = 1000
+                        return new PlayerEntity
+                        {
+                            SteamId = Convert.ToInt64(entry.SteamId),
+                            Elo = 1000
+                        };
+                    });
+                }
+                await playerMatchStatEntityStore.Create(() =>
+                {
+                    return new PlayerMatchStatEntity
+                    {
+                        PlayerId = playerEntity.SteamId,
+                        MatchId = match.DemoFileHash,
+                        Kills = entry.Kills,
+                        DamageAssists = entry.DamageAssists,
+                        Deaths = entry.Deaths,
+                        DamageDealt = entry.DamageDealt,
+                        Mvps = entry.Mvps,
+                        HeadshotPercentage = entry.HeadshotPercentage,
+                        HeadshotKillPercentage = entry.HeadshotKillPercentage,
+                        FlashAssists = entry.FlashAssists,
+                        EnemiesFlashed = entry.EnemiesFlashed,
+                        HighExplosiveGrenadeDamage = entry.HighExplosiveGrenadeDamage,
+                        FireGrenadeDamage = entry.FireGrenadeDamage,
+                        WonMatch = entry.WonMatch,
+                        StartingTeam = entry.StartingTeam
                     };
                 });
             }
-            await this.playerMatchStatEntityStore.Create(() =>
-            {
-                return new PlayerMatchStatEntity
-                {
-                    PlayerId = playerEntity.SteamId,
-                    MatchId = match.DemoFileHash,
-                    Kills = entry.Kills,
-                    DamageAssists = entry.DamageAssists,
-                    Deaths = entry.Deaths,
-                    DamageDealt = entry.DamageDealt,
-                    Mvps = entry.Mvps,
-                    HeadshotPercentage = entry.HeadshotPercentage,
-                    HeadshotKillPercentage = entry.HeadshotKillPercentage,
-                    FlashAssists = entry.FlashAssists,
-                    EnemiesFlashed = entry.EnemiesFlashed,
-                    HighExplosiveGrenadeDamage = entry.HighExplosiveGrenadeDamage,
-                    FireGrenadeDamage = entry.FireGrenadeDamage,
-                    WonMatch = entry.WonMatch,
-                    StartingTeam = entry.StartingTeam
-                };
-            });
-        }
 
-        foreach (var entry in coreMatchDataRecord.MatchKills)
-        {
-            var killer = await this.playerEntityStore.FindOnly((x) => x.SteamId == Convert.ToInt64(entry.KillerSteamId));
-            var victim = await this.playerEntityStore.FindOnly((x) => x.SteamId == Convert.ToInt64(entry.VictimSteamId));
-            await this.killEventEntityStore.Create(() =>
+            foreach (var entry in coreMatchDataRecord.MatchKills)
             {
-                return new KillEventEntity
+                var killer = await playerEntityStore.FindOnly((x) => x.SteamId == Convert.ToInt64(entry.KillerSteamId));
+                var victim = await playerEntityStore.FindOnly((x) => x.SteamId == Convert.ToInt64(entry.VictimSteamId));
+                await killEventEntityStore.Create(() =>
                 {
-                    KillerId = killer!.SteamId,
-                    VictimId = victim!.SteamId,
-                    MatchId = match.DemoFileHash,
-                    Weapon = entry.WeaponUsed,
-                    Headshot = entry.Headshot,
-                    Wallbang = entry.Wallbang,
-                    NoScope = entry.NoScope,
-                    ThroughSmoke = entry.ThroughSmoke,
-                    Midair = entry.Midair,
-                    AttackerBlind = entry.KillerFlashed,
-                    VictimBlind = entry.VictimFlashed
-                };
-            });
-        }
+                    return new KillEventEntity
+                    {
+                        KillerId = killer!.SteamId,
+                        VictimId = victim!.SteamId,
+                        MatchId = match.DemoFileHash,
+                        Weapon = entry.WeaponUsed,
+                        Headshot = entry.Headshot,
+                        Wallbang = entry.Wallbang,
+                        NoScope = entry.NoScope,
+                        ThroughSmoke = entry.ThroughSmoke,
+                        Midair = entry.Midair,
+                        AttackerBlind = entry.KillerFlashed,
+                        VictimBlind = entry.VictimFlashed
+                    };
+                });
+            }
 
-        await this.matchUploadEntityStore.Update(matchUploadId, (entity) =>
-        {
-            entity.Status = MatchUploadStatus.Completed;
-            entity.LastUpdatedAt = DateTime.Now;
+            await matchUploadEntityStore.Update(matchUploadId, (entity) =>
+            {
+                entity.Status = MatchUploadStatus.Completed;
+                entity.LastUpdatedAt = DateTime.Now;
+            });
         });
     }
 
     public async Task<string> GetMatchUploadStatus(int id)
     {
-        await this.transactionOperation.ExecuteOperationInTransactionAsync(async (operation) =>
-        {
-            var playerStore = operation.GetEntityStore<PlayerEntity, long>();
-            var seasonStore = operation.GetEntityStore<SeasonEntity, int>();
-            await playerStore.Create(() =>
-            {
-                return new PlayerEntity
-                {
-                    SteamId = 123456
-                };
-            });
-            throw new Exception("Test exception");
-            await seasonStore.Create(() =>
-            {
-                return new SeasonEntity
-                {
-                    Name = "Test1"
-                };
-            });
-
-        });
-        return "123";
+        var matchUploadEntityStore = this.transactionOperation.GetEntityStore<MatchUploadEntity, int>();
+        return (await matchUploadEntityStore.Get(id))!.Status.ToString();
     }
 
     public async Task<UploadMetaData?> GetUploadURL(string fileFingerprint, string fileExtension)
     {
-        var filesWithSameFingerPrint = await this.matchUploadEntityStore.FindAll((x) => x.DemoFingerprint == fileFingerprint && x.Status != MatchUploadStatus.FailedToUpload);
+        var matchUploadEntityStore = this.transactionOperation.GetEntityStore<MatchUploadEntity, int>();
+
+        // Only allowed to try and upload demo if 
+        // 1: No MatchUploadEntities with the same fingerprint exist
+        // 2: If the same fingerprint exists in other rows, make sure they're all in terminal failed state, and that no Match Entity already exists for any of them
+        var filesWithSameFingerPrint = await matchUploadEntityStore.FindAll(
+            (x) => x.DemoFingerprint == fileFingerprint && x.Status != MatchUploadStatus.FailedToUpload && x.Status != MatchUploadStatus.FailedToProcess);
         if (filesWithSameFingerPrint.Count > 0)
         {
             return null;
@@ -163,7 +162,7 @@ public class UploadsManager : IUploadsManager
 
         var uploadInfo = this.mediaStorageClient.GetUploadUrl(fileExtension, 1);
 
-        var matchUploadEntity = await this.matchUploadEntityStore.Create(() =>
+        var matchUploadEntity = await matchUploadEntityStore.Create(() =>
         {
             var newMatchUpload = new MatchUploadEntity
             {
@@ -180,7 +179,8 @@ public class UploadsManager : IUploadsManager
 
     public async Task UpdateMatchStatusAndPersistWork(Uri mediaStorageUri)
     {
-        var entities = await this.matchUploadEntityStore.FindAll((x) => x.DemoMediaStoreUri == mediaStorageUri.ToString());
+        var matchUploadEntityStore = this.transactionOperation.GetEntityStore<MatchUploadEntity, int>();
+        var entities = await matchUploadEntityStore.FindAll((x) => x.DemoMediaStoreUri == mediaStorageUri.ToString());
         if (entities.Count == 0)
         {
             this.logger.LogInformation("No entities found. Returning");
@@ -191,9 +191,10 @@ public class UploadsManager : IUploadsManager
         {
             this.logger.LogInformation("1 entity found. Working");
 
-            await this.matchUploadEntityStore.Update(entities[0].Id, (matchUploadEntity) =>
+            await matchUploadEntityStore.Update(entities[0].Id, (matchUploadEntity) =>
             {
                 matchUploadEntity.Status = MatchUploadStatus.Uploaded;
+                matchUploadEntity.LastUpdatedAt = DateTime.Now;
             });
         }
         else

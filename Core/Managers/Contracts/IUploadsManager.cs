@@ -10,5 +10,5 @@ public interface IUploadsManager
 
     public Task UpdateMatchStatusAndPersistWork(Uri mediaStorageUri);
 
-    public Task FinalizeMatchUploadEntityAndRecordData(int matchUploadId, CoreMatchDataRecord coreMatchDataRecord);
+    public Task FinalizeMatchUploadEntityAndRecordData(int matchUploadId, CoreMatchDataWrapperRecord coreMatchDataWrapperRecord);
 }
