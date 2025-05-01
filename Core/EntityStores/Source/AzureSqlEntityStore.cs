@@ -5,7 +5,7 @@ using System.Linq.Expressions;
 
 namespace InHouseCS2.Core.EntityStores;
 
-public class AzureSqlEntityStore<T> : IEntityStore<T> where T : BaseEntity
+public class AzureSqlEntityStore<T, TId> : IEntityStore<T, TId> where T : BaseEntity
 {
     private readonly DbContext dbContext;
     private readonly DbSet<T> dbSet;
@@ -23,7 +23,7 @@ public class AzureSqlEntityStore<T> : IEntityStore<T> where T : BaseEntity
         return entity;
     }
 
-    public Task Delete(int id)
+    public Task Delete(TId id)
     {
         throw new NotImplementedException();
     }
@@ -38,12 +38,12 @@ public class AzureSqlEntityStore<T> : IEntityStore<T> where T : BaseEntity
         return await this.dbSet.Where(filterFunc).SingleOrDefaultAsync();
     }
 
-    public async Task<T?> Get(int id)
+    public async Task<T?> Get(TId id)
     {
         return await this.dbSet.FindAsync(id);
     }
 
-    public async Task<T> Update(int id, Action<T> updateFunc)
+    public async Task<T> Update(TId id, Action<T> updateFunc)
     {
         var entity = await this.dbSet.FindAsync(id);
         if (entity == null)

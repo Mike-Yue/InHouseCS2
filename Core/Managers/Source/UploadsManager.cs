@@ -11,21 +11,21 @@ namespace InHouseCS2.Core.Managers;
 public class UploadsManager : IUploadsManager
 {
     private readonly IMediaStorageClient mediaStorageClient;
-    private readonly IEntityStore<MatchUploadEntity> matchUploadEntityStore;
-    private readonly IEntityStore<MatchEntity> matchEntityStore;
-    private readonly IEntityStore<PlayerEntity> playerEntityStore;
-    private readonly IEntityStore<PlayerMatchStatEntity> playerMatchStatEntityStore;
-    private readonly IEntityStore<KillEventEntity> killEventEntityStore;
+    private readonly IEntityStore<MatchUploadEntity, int> matchUploadEntityStore;
+    private readonly IEntityStore<MatchEntity, string> matchEntityStore;
+    private readonly IEntityStore<PlayerEntity, long> playerEntityStore;
+    private readonly IEntityStore<PlayerMatchStatEntity, int> playerMatchStatEntityStore;
+    private readonly IEntityStore<KillEventEntity, int> killEventEntityStore;
     private readonly ITransactionOperation transactionOperation;
     private readonly ILogger<UploadsManager> logger;
 
     public UploadsManager(
         IMediaStorageClient mediaStorageClient,
-        IEntityStore<MatchUploadEntity> matchUploadEntityStore,
-        IEntityStore<MatchEntity> matchEntityStore,
-        IEntityStore<PlayerEntity> playerEntityStore,
-        IEntityStore<PlayerMatchStatEntity> playerMatchStatEntityStore,
-        IEntityStore<KillEventEntity> killEventEntityStore,
+        IEntityStore<MatchUploadEntity, int> matchUploadEntityStore,
+        IEntityStore<MatchEntity, string> matchEntityStore,
+        IEntityStore<PlayerEntity, long> playerEntityStore,
+        IEntityStore<PlayerMatchStatEntity, int> playerMatchStatEntityStore,
+        IEntityStore<KillEventEntity, int> killEventEntityStore,
         ITransactionOperation transacationOperation,
         ILogger<UploadsManager> logger)
     {
@@ -131,8 +131,8 @@ public class UploadsManager : IUploadsManager
     {
         await this.transactionOperation.ExecuteOperationInTransactionAsync(async (operation) =>
         {
-            var playerStore = operation.GetEntityStore<PlayerEntity>();
-            var seasonStore = operation.GetEntityStore<SeasonEntity>();
+            var playerStore = operation.GetEntityStore<PlayerEntity, long>();
+            var seasonStore = operation.GetEntityStore<SeasonEntity, int>();
             await playerStore.Create(() =>
             {
                 return new PlayerEntity

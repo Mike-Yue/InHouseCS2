@@ -1,7 +1,5 @@
 ﻿using InHouseCS2.Core.EntityStores.Contracts.Models;
 using Microsoft.EntityFrameworkCore;
-using System.Reflection;
-using System.Text.RegularExpressions;
 
 namespace InHouseCS2.Core.EntityStores
 {
@@ -53,6 +51,14 @@ namespace InHouseCS2.Core.EntityStores
             modelBuilder.Entity<PlayerMatchStatEntity>()
                 .HasIndex(k => new { k.PlayerId, k.MatchId })
                 .IsUnique();
+
+            modelBuilder.Entity<PlayerMatchStatEntity>()
+                .Property(p => p.HeadshotPercentage)
+                .HasPrecision(6, 3);
+
+            modelBuilder.Entity<PlayerMatchStatEntity>()
+                .Property(p => p.HeadshotKillPercentage)
+                .HasPrecision(6, 3);
 
             // KillEvent → Player (Killer)
             modelBuilder.Entity<KillEventEntity>()

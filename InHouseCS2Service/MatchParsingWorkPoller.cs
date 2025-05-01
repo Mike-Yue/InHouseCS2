@@ -22,7 +22,7 @@ namespace InHouseCS2Service
             while (!stoppingToken.IsCancellationRequested)
             {
                 using var scope = this.scopeFactory.CreateScope();
-                var matchParserEntityStore = scope.ServiceProvider.GetRequiredService<IEntityStore<MatchUploadEntity>>();
+                var matchParserEntityStore = scope.ServiceProvider.GetRequiredService<IEntityStore<MatchUploadEntity, int>>();
 
                 var pendingWork = await matchParserEntityStore.FindAll((x) => x.Status == MatchUploadStatus.Uploaded);
 

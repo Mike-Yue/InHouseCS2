@@ -28,8 +28,8 @@ public class AzureSqlTransactionOperation : ITransactionOperation
         }
     }
 
-    public IEntityStore<T> GetEntityStore<T>() where T : BaseEntity
+    public IEntityStore<T, TId> GetEntityStore<T, TId>() where T : BaseEntity
     {
-        return new AzureSqlEntityStore<T>(this.dbContext);
+        return new AzureSqlEntityStore<T, TId>(this.dbContext);
     }
 }

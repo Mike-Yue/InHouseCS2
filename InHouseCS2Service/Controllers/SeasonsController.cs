@@ -9,10 +9,10 @@ namespace InHouseCS2Service.Controllers
     [Route("[controller]")]
     public class SeasonsController : ControllerBase
     {
-        private IEntityStore<SeasonEntity> seasonEntityStore;
+        private IEntityStore<SeasonEntity, int> seasonEntityStore;
         private readonly ILogger<MatchesController> logger;
 
-        public SeasonsController(IEntityStore<SeasonEntity> seasonEntityStore, ILogger<MatchesController> logger)
+        public SeasonsController(IEntityStore<SeasonEntity, int> seasonEntityStore, ILogger<MatchesController> logger)
         {
             this.seasonEntityStore = seasonEntityStore;
             this.logger = logger;

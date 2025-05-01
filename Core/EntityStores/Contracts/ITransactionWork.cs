@@ -7,5 +7,5 @@ public interface ITransactionOperation
     public Task ExecuteOperationInTransactionAsync(
         Func<ITransactionOperation, Task> operation);
 
-    public IEntityStore<T> GetEntityStore<T>() where T : BaseEntity;
+    public IEntityStore<T, TId> GetEntityStore<T, TId>() where T : BaseEntity;
 }

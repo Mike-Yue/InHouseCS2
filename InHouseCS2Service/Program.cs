@@ -40,22 +40,22 @@ builder.Services.AddScoped<IMediaStorageClient>(serviceProvider =>
 });
 
 builder.Services.AddScoped(typeof(ITransactionOperation), typeof(AzureSqlTransactionOperation));
-builder.Services.AddScoped(typeof(IEntityStore<MatchUploadEntity>), typeof(AzureSqlEntityStore<MatchUploadEntity>));
-builder.Services.AddScoped(typeof(IEntityStore<SeasonEntity>), typeof(AzureSqlEntityStore<SeasonEntity>));
-builder.Services.AddScoped(typeof(IEntityStore<MatchEntity>), typeof(AzureSqlEntityStore<MatchEntity>));
-builder.Services.AddScoped(typeof(IEntityStore<PlayerEntity>), typeof(AzureSqlEntityStore<PlayerEntity>));
-builder.Services.AddScoped(typeof(IEntityStore<KillEventEntity>), typeof(AzureSqlEntityStore<KillEventEntity>));
-builder.Services.AddScoped(typeof(IEntityStore<PlayerMatchStatEntity>), typeof(AzureSqlEntityStore<PlayerMatchStatEntity>));
+builder.Services.AddScoped(typeof(IEntityStore<MatchUploadEntity, int>), typeof(AzureSqlEntityStore<MatchUploadEntity, int>));
+builder.Services.AddScoped(typeof(IEntityStore<SeasonEntity, int>), typeof(AzureSqlEntityStore<SeasonEntity, int>));
+builder.Services.AddScoped(typeof(IEntityStore<MatchEntity, string>), typeof(AzureSqlEntityStore<MatchEntity, string>));
+builder.Services.AddScoped(typeof(IEntityStore<PlayerEntity, long>), typeof(AzureSqlEntityStore<PlayerEntity, long>));
+builder.Services.AddScoped(typeof(IEntityStore<KillEventEntity, int>), typeof(AzureSqlEntityStore<KillEventEntity, int>));
+builder.Services.AddScoped(typeof(IEntityStore<PlayerMatchStatEntity, int>), typeof(AzureSqlEntityStore<PlayerMatchStatEntity, int>));
 
 builder.Services.AddScoped<IUploadsManager>(serviceProvider =>
 {
     return new UploadsManager(
         serviceProvider.GetRequiredService<IMediaStorageClient>(),
-        serviceProvider.GetRequiredService<IEntityStore<MatchUploadEntity>>(),
-        serviceProvider.GetRequiredService<IEntityStore<MatchEntity>>(),
-        serviceProvider.GetRequiredService<IEntityStore<PlayerEntity>>(),
-        serviceProvider.GetRequiredService<IEntityStore<PlayerMatchStatEntity>>(),
-        serviceProvider.GetRequiredService<IEntityStore<KillEventEntity>>(),
+        serviceProvider.GetRequiredService<IEntityStore<MatchUploadEntity, int>>(),
+        serviceProvider.GetRequiredService<IEntityStore<MatchEntity, string>>(),
+        serviceProvider.GetRequiredService<IEntityStore<PlayerEntity, long>>(),
+        serviceProvider.GetRequiredService<IEntityStore<PlayerMatchStatEntity, int>>(),
+        serviceProvider.GetRequiredService<IEntityStore<KillEventEntity, int>>(),
         serviceProvider.GetRequiredService<ITransactionOperation>(),
         serviceProvider.GetRequiredService<ILogger<UploadsManager>>());
 });
