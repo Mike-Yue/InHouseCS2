@@ -35,10 +35,25 @@ namespace InHouseCS2Service.Controllers
         [HttpPost("notifyUploadStatus")]
         public async Task<IActionResult> PostMatchUploadComplete([EventGridTrigger] EventGridEvent eventGridEvent)
         {
-            var data = eventGridEvent.Data.ToObjectFromJson<StorageBlobCreatedEventData>();
-            this.logger.LogWarning($"Event url is: {data.Url}");
-            await this.uploadsManager.UpdateMatchStatusAndPersistWork(new Uri(data.Url));
-            return this.Ok();
+            if (eventGridEvent.EventType == "Microsoft.EventGrid.SubscriptionValidationEvent")
+            {
+                var validationData = eventGridEvent.Data.ToObjectFromJson<SubscriptionValidationEventData>();
+                var responseData = new
+                {
+                    validationResponse = validationData.ValidationCode
+                };
+                return new OkObjectResult(responseData);
+            }
+
+            if (eventGridEvent.EventType == "Microsoft.Storage.BlobCreated")
+            {
+                var data = eventGridEvent.Data.ToObjectFromJson<StorageBlobCreatedEventData>();
+                this.logger.LogWarning($"Event url is: {data.Url}");
+                await this.uploadsManager.UpdateMatchStatusAndPersistWork(new Uri(data.Url));
+                return this.Ok();
+            }
+
+            return this.BadRequest("Unhandled event type.");
         }
 
         [HttpPost("{matchUploadId}")]
