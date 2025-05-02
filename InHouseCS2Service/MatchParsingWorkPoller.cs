@@ -26,7 +26,6 @@ namespace InHouseCS2Service
                 var matchUploadEntityStore = scope.ServiceProvider.GetRequiredService<IEntityStore<MatchUploadEntity, int>>();
                 var matchParserServiceClient = scope.ServiceProvider.GetRequiredService<IMatchParserServiceClient>();
                 var mediaStorageClient = scope.ServiceProvider.GetRequiredService<IMediaStorageClient>();
-                var tokenGenerator = scope.ServiceProvider.GetRequiredService<ITokenGenerator>();
 
                 var pendingWork = await matchUploadEntityStore.FindAll((x) => x.Status == MatchUploadStatus.Uploaded);
 
@@ -35,7 +34,7 @@ namespace InHouseCS2Service
                     try
                     {
                         // Sending the work twice is ok, the webhook Uri MatchParserService updates will be idempotent
-                        await this.SendToMatchParserService(work, matchUploadEntityStore, matchParserServiceClient, mediaStorageClient, tokenGenerator);
+                        await this.SendToMatchParserService(work, matchUploadEntityStore, matchParserServiceClient, mediaStorageClient);
                     }
                     catch (InvalidOperationException ex)
                     {
@@ -53,18 +52,15 @@ namespace InHouseCS2Service
             MatchUploadEntity task,
             IEntityStore<MatchUploadEntity, int> matchUploadEntityStore,
             IMatchParserServiceClient matchParserServiceClient,
-            IMediaStorageClient mediaStorageClient,
-            ITokenGenerator tokenGenerator)
+            IMediaStorageClient mediaStorageClient)
         {
             this.logger.LogInformation($"Executing work on {task.Id}");
 
             var callbackUri = new Uri($"https://inhousecs2.azurewebsites.net/uploads/{task.Id}");
-            // We would want to save the token in store and expire it/delete it after a set amount of time
-            var callbackToken = tokenGenerator.GenerateCallbackToken();
 
             var downloadUri = mediaStorageClient.GetDownloadUrl(task.DemoMediaStoreUri!, 1);
 
-            var response = matchParserServiceClient.SendMatchForParsing(downloadUri, callbackUri, callbackToken);
+            var response = await matchParserServiceClient.SendMatchForParsing("/parse", downloadUri, callbackUri);
 
             if (response.Success)
             {
@@ -74,7 +70,6 @@ namespace InHouseCS2Service
                     entity.LastUpdatedAt = DateTime.UtcNow;
                 });
             }
-            await Task.CompletedTask;
         }
     }
 }

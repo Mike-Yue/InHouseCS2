@@ -2,5 +2,5 @@
 
 public interface IMatchParserServiceClient
 {
-    public MatchParserServiceResponse SendMatchForParsing(Uri downloadUri, Uri callbackUri, string callbackToken);
+    public Task<MatchParserServiceResponse> SendMatchForParsing(string path, Uri downloadUri, Uri callbackUri);
 }

@@ -22,11 +22,18 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddAutoMapper(typeof(MappingProfile));
 
+builder.Services.AddHttpClient("MatchParserHttpClient", (httpClient) =>
+{
+    httpClient.BaseAddress = new Uri("https://andrew-server.com/");
+});
+
 builder.Services.AddHostedService<MatchParsingWorkPoller>();
 
 builder.Services.AddDbContext<AzureSqlDbContext>(options => options.UseSqlServer(
     Environment.GetEnvironmentVariable("SQLSERVER_CONNECTION_STRING")
     ));
+
+builder.Services.AddScoped<IMatchParserServiceClient, MatchParserServiceClient>();
 
 BlobContainerClient blobContainerClient = new BlobContainerClient(
 connectionString: Environment.GetEnvironmentVariable("BlOBCONTAINER_CONNECTION_STRING"),

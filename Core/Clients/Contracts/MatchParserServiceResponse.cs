@@ -3,4 +3,5 @@
 public record MatchParserServiceResponse
 {
     public required bool Success;
+    public string? errorReason;
 }
