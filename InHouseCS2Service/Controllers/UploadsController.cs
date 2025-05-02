@@ -24,11 +24,7 @@ namespace InHouseCS2Service.Controllers
         [HttpPost("url")]
         public async Task<IActionResult> PostUrl([FromBody] DemoFileMetadata demoFileMetadata)
         {
-            if (!string.Equals(demoFileMetadata.FileExtension, "dem", StringComparison.OrdinalIgnoreCase))
-            {
-                return this.BadRequest("Invalid demo file extension");
-            }
-            var uploadMetaData = await this.uploadsManager.GetUploadURL(demoFileMetadata.DemoFingerPrint, demoFileMetadata.FileExtension);
+            var uploadMetaData = await this.uploadsManager.GetUploadURL(demoFileMetadata.DemoFingerPrint, demoFileMetadata.MatchPlayedAt);
 
             return uploadMetaData is null ? this.BadRequest($"Demo with fingerprint {demoFileMetadata.DemoFingerPrint} already exists in db") : this.Ok(uploadMetaData);
         }
@@ -54,9 +50,14 @@ namespace InHouseCS2Service.Controllers
         }
 
         [HttpGet("{matchUploadId}")]
-        public async Task<string> GetMatchUploadId(string matchUploadId)
+        public async Task<IActionResult> GetMatchUploadId(string matchUploadId)
         {
-            return await this.uploadsManager.GetMatchUploadStatus(Int32.Parse(matchUploadId));
+            var status = await this.uploadsManager.GetMatchUploadStatus(Int32.Parse(matchUploadId));
+            if (status is null)
+            {
+                return this.NotFound($"Match upload with id {matchUploadId} not found");
+            }
+            return this.Ok(status);
         }
     }
 }

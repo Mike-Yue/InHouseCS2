@@ -4,5 +4,5 @@ public class DemoFileMetadata
 {
     public required string DemoFingerPrint { get; set; }
 
-    public required string FileExtension { get; set; }
+    public required DateTime MatchPlayedAt { get; set; }
 }

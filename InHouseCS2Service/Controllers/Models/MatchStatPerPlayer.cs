@@ -13,6 +13,9 @@ public class MatchStatPerPlayer
     public required decimal HeadshotPercentage { get; init; }
     public required decimal HeadshotKillPercentage { get; init; }
 
+    public required decimal KASTRating { get; init; }
+    public required decimal HLTVRating { get; init; }
+
     // Utility stats
     public required int FlashAssists { get; init; }
     public required int EnemiesFlashed { get; init; }

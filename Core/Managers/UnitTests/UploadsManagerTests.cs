@@ -39,7 +39,7 @@ public sealed class UploadsManagerTests
         // Execute
         await uploadsManagerFixture.TestComponentAndVerifyMocksAsync(async s =>
         {
-            var output = (await s.GetUploadURL(fingerprint, "dem"));
+            var output = (await s.GetUploadURL(fingerprint, DateTime.Now));
             output.Should().BeNull();
         });
 
@@ -85,7 +85,7 @@ public sealed class UploadsManagerTests
         // Execute
         await uploadsManagerFixture.TestComponentAndVerifyMocksAsync(async s =>
         {
-            var output = (await s.GetUploadURL(fingerprint, "dem"));
+            var output = (await s.GetUploadURL(fingerprint, DateTime.Now));
             output.Should().NotBeNull();
             output.uploadUri.Should().BeEquivalentTo(uploadUri);
             output.id.Should().Be(matchUploadEntity.Id);

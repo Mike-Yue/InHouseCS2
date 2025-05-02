@@ -9,7 +9,7 @@ public class MatchEntity : BaseEntity
     [DatabaseGenerated(DatabaseGeneratedOption.None)]
     public required string DemoFileHash { get; set; }
     public required string Map { get; set; }
-    public DateTime DatePlayed { get; set; }
+    public required DateTime DatePlayed { get; set; }
 
     public int WinScore { get; set; }
     public int LoseScore { get; set; }

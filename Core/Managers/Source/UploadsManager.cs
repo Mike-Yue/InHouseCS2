@@ -65,6 +65,7 @@ public class UploadsManager : IUploadsManager
                 {
                     DemoFileHash = matchUploadEntity.DemoFingerprint,
                     Map = coreMatchDataRecord.MatchMetadata.Map,
+                    DatePlayed = matchUploadEntity.MatchPlayedAt,
                     WinScore = coreMatchDataRecord.MatchMetadata.WinningScore,
                     LoseScore = coreMatchDataRecord.MatchMetadata.LosingScore,
                     MatchUploadEntityId = matchUploadId,
@@ -99,6 +100,8 @@ public class UploadsManager : IUploadsManager
                         Mvps = entry.Mvps,
                         HeadshotPercentage = entry.HeadshotPercentage,
                         HeadshotKillPercentage = entry.HeadshotKillPercentage,
+                        KASTRating = entry.KASTRating,
+                        HLTVRating = entry.HLTVRating,
                         FlashAssists = entry.FlashAssists,
                         EnemiesFlashed = entry.EnemiesFlashed,
                         HighExplosiveGrenadeDamage = entry.HighExplosiveGrenadeDamage,
@@ -140,13 +143,14 @@ public class UploadsManager : IUploadsManager
         });
     }
 
-    public async Task<string> GetMatchUploadStatus(int id)
+    public async Task<string?> GetMatchUploadStatus(int id)
     {
         var matchUploadEntityStore = this.transactionOperation.GetEntityStore<MatchUploadEntity, int>();
-        return (await matchUploadEntityStore.Get(id))!.Status.ToString();
+        var matchEntity = await matchUploadEntityStore.Get(id);
+        return matchEntity is null ? null : matchEntity.Status.ToString();
     }
 
-    public async Task<UploadMetaData?> GetUploadURL(string fileFingerprint, string fileExtension)
+    public async Task<UploadMetaData?> GetUploadURL(string fileFingerprint, DateTime matchPlayedAt)
     {
         var matchUploadEntityStore = this.transactionOperation.GetEntityStore<MatchUploadEntity, int>();
 
@@ -160,7 +164,7 @@ public class UploadsManager : IUploadsManager
             return null;
         }
 
-        var uploadInfo = this.mediaStorageClient.GetUploadUrl(fileExtension, 1);
+        var uploadInfo = this.mediaStorageClient.GetUploadUrl("dem", 0.5);
 
         var matchUploadEntity = await matchUploadEntityStore.Create(() =>
         {
@@ -168,6 +172,7 @@ public class UploadsManager : IUploadsManager
             {
                 DemoFingerprint = fileFingerprint,
                 Status = MatchUploadStatus.Initialized,
+                MatchPlayedAt = matchPlayedAt,
                 DemoMediaStoreUri = uploadInfo.mediaUri.ToString(),
                 CreatedAt = DateTime.Now,
                 LastUpdatedAt = DateTime.Now

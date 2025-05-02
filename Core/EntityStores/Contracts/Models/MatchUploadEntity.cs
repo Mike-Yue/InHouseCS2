@@ -16,6 +16,8 @@ public class MatchUploadEntity : BaseEntity
 
     public DateTime CreatedAt { get; set; }
 
+    public DateTime MatchPlayedAt { get; set; }
+
     public string? ErrorMessage { get; set; }
 
     public DateTime LastUpdatedAt { get; set; }

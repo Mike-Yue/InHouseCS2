@@ -20,6 +20,8 @@ public class PlayerMatchStatEntity : BaseEntity
     public required int Mvps { get; set; }
     public required decimal HeadshotPercentage { get; set; }
     public required decimal HeadshotKillPercentage { get; set; }
+    public required decimal KASTRating { get; set; }
+    public required decimal HLTVRating { get; set; }
 
     // Utility stats
     public required int FlashAssists { get; set; }
