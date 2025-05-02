@@ -1,4 +1,5 @@
 ﻿
+using InHouseCS2.Core.Clients.Contracts;
 using InHouseCS2.Core.EntityStores.Contracts;
 using InHouseCS2.Core.EntityStores.Contracts.Models;
 
@@ -22,21 +23,19 @@ namespace InHouseCS2Service
             while (!stoppingToken.IsCancellationRequested)
             {
                 using var scope = this.scopeFactory.CreateScope();
-                var matchParserEntityStore = scope.ServiceProvider.GetRequiredService<IEntityStore<MatchUploadEntity, int>>();
+                var matchUploadEntityStore = scope.ServiceProvider.GetRequiredService<IEntityStore<MatchUploadEntity, int>>();
+                var matchParserServiceClient = scope.ServiceProvider.GetRequiredService<IMatchParserServiceClient>();
+                var mediaStorageClient = scope.ServiceProvider.GetRequiredService<IMediaStorageClient>();
+                var tokenGenerator = scope.ServiceProvider.GetRequiredService<ITokenGenerator>();
 
-                var pendingWork = await matchParserEntityStore.FindAll((x) => x.Status == MatchUploadStatus.Uploaded);
+                var pendingWork = await matchUploadEntityStore.FindAll((x) => x.Status == MatchUploadStatus.Uploaded);
 
                 foreach (var work in pendingWork)
                 {
                     try
                     {
                         // Sending the work twice is ok, the webhook Uri MatchParserService updates will be idempotent
-                        await this.SendToMatchParserService(work);
-                        await matchParserEntityStore.Update(work.Id, (entity) =>
-                        {
-                            entity.Status = MatchUploadStatus.Processing;
-                            entity.LastUpdatedAt = DateTime.UtcNow;
-                        });
+                        await this.SendToMatchParserService(work, matchUploadEntityStore, matchParserServiceClient, mediaStorageClient, tokenGenerator);
                     }
                     catch (InvalidOperationException ex)
                     {
@@ -50,11 +49,31 @@ namespace InHouseCS2Service
             this.logger.LogInformation("Polling service stopped");
         }
 
-        private async Task SendToMatchParserService(MatchUploadEntity task)
+        private async Task SendToMatchParserService(
+            MatchUploadEntity task,
+            IEntityStore<MatchUploadEntity, int> matchUploadEntityStore,
+            IMatchParserServiceClient matchParserServiceClient,
+            IMediaStorageClient mediaStorageClient,
+            ITokenGenerator tokenGenerator)
         {
             this.logger.LogInformation($"Executing work on {task.Id}");
-            var associatedMatchUploadId = task.Id;
-            // Get Presigned URL and associatedMatchUploadId and send to Match service
+
+            var callbackUri = new Uri($"https://inhousecs2.azurewebsites.net/uploads/{task.Id}");
+            // We would want to save the token in store and expire it/delete it after a set amount of time
+            var callbackToken = tokenGenerator.GenerateCallbackToken();
+
+            var downloadUri = mediaStorageClient.GetDownloadUrl(task.DemoMediaStoreUri!, 1);
+
+            var response = matchParserServiceClient.SendMatchForParsing(downloadUri, callbackUri, callbackToken);
+
+            if (response.Success)
+            {
+                await matchUploadEntityStore.Update(task.Id, (entity) =>
+                {
+                    entity.Status = MatchUploadStatus.Processing;
+                    entity.LastUpdatedAt = DateTime.UtcNow;
+                });
+            }
             await Task.CompletedTask;
         }
     }

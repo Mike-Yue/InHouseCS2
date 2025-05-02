@@ -146,8 +146,8 @@ public class UploadsManager : IUploadsManager
     public async Task<string?> GetMatchUploadStatus(int id)
     {
         var matchUploadEntityStore = this.transactionOperation.GetEntityStore<MatchUploadEntity, int>();
-        var matchEntity = await matchUploadEntityStore.Get(id);
-        return matchEntity is null ? null : matchEntity.Status.ToString();
+        var matchUploadEntity = await matchUploadEntityStore.Get(id);
+        return matchUploadEntity is null ? null : matchUploadEntity.Status.ToString();
     }
 
     public async Task<UploadMetaData?> GetUploadURL(string fileFingerprint, DateTime matchPlayedAt)

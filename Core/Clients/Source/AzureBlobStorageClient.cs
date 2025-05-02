@@ -36,4 +36,24 @@ public class AzureBlobStorageClient : IMediaStorageClient
 
         return new MediaUploadInfo(blobClient.GenerateSasUri(blobSasBuilder), blobClient.Uri);
     }
+
+    public Uri GetDownloadUrl(string fileUri, double hoursValidFor)
+    {
+        this.logger.LogInformation($"Can generate SAS URI - {this.blobContainerClient.CanGenerateSasUri}");
+        var guid = Guid.NewGuid();
+        var blobClient = this.blobContainerClient.GetBlobClient(fileUri);
+        this.logger.LogInformation($"Blob URI is: {blobClient.Uri}");
+
+        var blobSasBuilder = new BlobSasBuilder()
+        {
+            BlobContainerName = this.blobContainerClient.Name,
+            BlobName = fileUri,
+            Resource = "b"
+        };
+
+        blobSasBuilder.SetPermissions(BlobContainerSasPermissions.Read);
+        blobSasBuilder.ExpiresOn = DateTimeOffset.UtcNow.AddHours(hoursValidFor);
+
+        return blobClient.GenerateSasUri(blobSasBuilder);
+    }
 }
