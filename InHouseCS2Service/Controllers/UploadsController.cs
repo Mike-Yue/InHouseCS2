@@ -3,6 +3,9 @@ using InHouseCS2.Core.Managers.Contracts;
 using InHouseCS2.Core.Managers.Contracts.Models;
 using InHouseCS2Service.Controllers.Models;
 using Microsoft.AspNetCore.Mvc;
+using Azure.Messaging.EventGrid;
+using Azure.Messaging.EventGrid.SystemEvents;
+using Microsoft.Azure.WebJobs.Extensions.EventGrid;
 
 namespace InHouseCS2Service.Controllers
 {
@@ -30,13 +33,11 @@ namespace InHouseCS2Service.Controllers
         }
 
         [HttpPost("notifyUploadStatus")]
-        public async Task<IActionResult> PostMatchUploadComplete()
+        public async Task<IActionResult> PostMatchUploadComplete([EventGridTrigger] EventGridEvent eventGridEvent)
         {
-            if (!this.Request.Headers.TryGetValue("media-storage-uri", out var mediaStorageUri))
-            {
-                return this.BadRequest("Required header value not provided");
-            }
-            await this.uploadsManager.UpdateMatchStatusAndPersistWork(new Uri(mediaStorageUri!));
+            var data = eventGridEvent.Data.ToObjectFromJson<StorageBlobCreatedEventData>();
+            this.logger.LogWarning($"Event url is: {data.Url}");
+            await this.uploadsManager.UpdateMatchStatusAndPersistWork(new Uri(data.Url));
             return this.Ok();
         }
 
