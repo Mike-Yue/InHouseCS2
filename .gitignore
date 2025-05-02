@@ -6,3 +6,4 @@ packages/
 .env
 
 coverage*
+testsettings.json

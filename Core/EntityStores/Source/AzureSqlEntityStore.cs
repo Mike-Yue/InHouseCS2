@@ -23,9 +23,10 @@ public class AzureSqlEntityStore<T, TId> : IEntityStore<T, TId> where T : BaseEn
         return entity;
     }
 
-    public Task Delete(TId id)
+    public async Task Delete(T entity)
     {
-        throw new NotImplementedException();
+        this.dbSet.Remove(entity);
+        await this.dbContext.SaveChangesAsync();
     }
 
     public async Task<List<T>> FindAll(Expression<Func<T, bool>> filterFunc)

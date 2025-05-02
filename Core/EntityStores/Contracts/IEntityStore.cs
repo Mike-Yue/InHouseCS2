@@ -15,5 +15,5 @@ public interface IEntityStore<T, TId> where T: BaseEntity
 
     public Task<T> Update(TId id, Action<T> updateFunc);
 
-    public Task Delete(TId id);
+    public Task Delete(T entity);
 }
