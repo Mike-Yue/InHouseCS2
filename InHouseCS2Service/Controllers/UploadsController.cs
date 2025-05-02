@@ -5,7 +5,6 @@ using InHouseCS2Service.Controllers.Models;
 using Microsoft.AspNetCore.Mvc;
 using Azure.Messaging.EventGrid;
 using Azure.Messaging.EventGrid.SystemEvents;
-using Microsoft.Azure.WebJobs.Extensions.EventGrid;
 
 namespace InHouseCS2Service.Controllers
 {
@@ -33,26 +32,40 @@ namespace InHouseCS2Service.Controllers
         }
 
         [HttpPost("notifyUploadStatus")]
-        public async Task<IActionResult> PostMatchUploadComplete([EventGridTrigger] EventGridEvent eventGridEvent)
+        public async Task<IActionResult> PostMatchUploadComplete()
         {
-            if (eventGridEvent.EventType == "Microsoft.EventGrid.SubscriptionValidationEvent")
+            BinaryData events = await BinaryData.FromStreamAsync(this.Request.Body);
+            EventGridEvent[] eventGridEvents = EventGridEvent.ParseMany(events);
+            foreach (EventGridEvent eventGridEvent in eventGridEvents)
             {
-                var validationData = eventGridEvent.Data.ToObjectFromJson<SubscriptionValidationEventData>();
-                var responseData = new
+                // Handle system events
+                if (eventGridEvent.TryGetSystemEventData(out object eventData))
                 {
-                    validationResponse = validationData.ValidationCode
-                };
-                return new OkObjectResult(responseData);
-            }
+                    // Handle the subscription validation event
+                    if (eventData is SubscriptionValidationEventData subscriptionValidationEventData)
+                    {
+                        this.logger.LogInformation($"Got SubscriptionValidation event data, validation code: {subscriptionValidationEventData.ValidationCode}, topic: {eventGridEvent.Topic}");
+                        // Do any additional validation (as required) and then return back the below response
+                        var responseData = new
+                        {
+                            ValidationResponse = subscriptionValidationEventData.ValidationCode
+                        };
 
-            if (eventGridEvent.EventType == "Microsoft.Storage.BlobCreated")
-            {
-                var data = eventGridEvent.Data.ToObjectFromJson<StorageBlobCreatedEventData>();
-                this.logger.LogWarning($"Event url is: {data.Url}");
-                await this.uploadsManager.UpdateMatchStatusAndPersistWork(new Uri(data.Url));
-                return this.Ok();
+                        return new OkObjectResult(responseData);
+                    }
+                    else if (eventData is StorageBlobCreatedEventData storageBlobCreatedEventData)
+                    {
+                        var data = eventGridEvent.Data.ToObjectFromJson<StorageBlobCreatedEventData>();
+                        this.logger.LogWarning($"Event url is: {data.Url}");
+                        await this.uploadsManager.UpdateMatchStatusAndPersistWork(new Uri(data.Url));
+                        return this.Ok();
+                    }
+                    else
+                    {
+                        return this.BadRequest("Unhandled event type.");
+                    }
+                }
             }
-
             return this.BadRequest("Unhandled event type.");
         }
 
