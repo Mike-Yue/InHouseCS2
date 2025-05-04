@@ -187,6 +187,7 @@ public sealed class UploadsManagerTests
     {
         public Mock<IMediaStorageClient> mockMediaStorageClient = new(MockBehavior.Strict);
         public Mock<ITransactionOperation> mockTransactionOperation = new(MockBehavior.Strict);
+        public Mock<IMatchParserServiceClient> mockCatchParserServiceClient = new(MockBehavior.Strict);
         public Mock<IEntityStore<MatchUploadEntity, int>> mockMatchUploadEntityStore = new(MockBehavior.Strict);
 
         public override UploadsManager SetSubject()
@@ -196,6 +197,7 @@ public sealed class UploadsManagerTests
             return new UploadsManager(
                 mediaStorageClient: this.mockMediaStorageClient.Object,
                 transacationOperation: this.mockTransactionOperation.Object,
+                matchParserServiceClient: this.mockCatchParserServiceClient.Object,
                 logger: logger
                 );
         }

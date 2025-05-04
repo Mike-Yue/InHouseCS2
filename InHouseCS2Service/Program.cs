@@ -59,6 +59,7 @@ builder.Services.AddScoped<IUploadsManager>(serviceProvider =>
     return new UploadsManager(
         serviceProvider.GetRequiredService<IMediaStorageClient>(),
         serviceProvider.GetRequiredService<ITransactionOperation>(),
+        serviceProvider.GetRequiredService<IMatchParserServiceClient>(),
         serviceProvider.GetRequiredService<ILogger<UploadsManager>>());
 });
 

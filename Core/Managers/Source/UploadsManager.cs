@@ -11,15 +11,18 @@ public class UploadsManager : IUploadsManager
 {
     private readonly IMediaStorageClient mediaStorageClient;
     private readonly ITransactionOperation transactionOperation;
+    private readonly IMatchParserServiceClient matchParserServiceClient;
     private readonly ILogger<UploadsManager> logger;
 
     public UploadsManager(
         IMediaStorageClient mediaStorageClient,
         ITransactionOperation transacationOperation,
+        IMatchParserServiceClient matchParserServiceClient,
         ILogger<UploadsManager> logger)
     {
         this.mediaStorageClient = mediaStorageClient;
         this.transactionOperation = transacationOperation;
+        this.matchParserServiceClient = matchParserServiceClient;
         this.logger = logger;
     }
 
@@ -196,15 +199,53 @@ public class UploadsManager : IUploadsManager
         {
             this.logger.LogInformation("1 entity found. Working");
 
-            await matchUploadEntityStore.Update(entities[0].Id, (matchUploadEntity) =>
+            await this.transactionOperation.ExecuteOperationInTransactionAsync(async (operation) =>
             {
-                matchUploadEntity.Status = MatchUploadStatus.Uploaded;
-                matchUploadEntity.LastUpdatedAt = DateTime.Now;
+                var matchUploadEntity = await matchUploadEntityStore.Update(entities[0].Id, (matchUploadEntity) =>
+                {
+                    matchUploadEntity.Status = MatchUploadStatus.Uploaded;
+                    matchUploadEntity.LastUpdatedAt = DateTime.Now;
+                });
+                _ = Task.Run(async () =>
+                {
+                    try
+                    {
+                        await this.SendToMatchParserService(matchUploadEntity, matchUploadEntityStore);
+                    }
+                    catch (Exception ex)
+                    {
+                        this.logger.LogError($"Error sending Match demo to MatchParserService: {ex.Message}");
+                    }
+                });
             });
         }
         else
         {
             throw new Exception("Multiple rows found with the same media storage Uri");
+        }
+    }
+
+    private async Task SendToMatchParserService(
+        MatchUploadEntity task,
+        IEntityStore<MatchUploadEntity, int> matchUploadEntityStore)
+    {
+        this.logger.LogInformation($"Executing work on {task.Id}");
+
+        var callbackUri = new Uri($"https://inhousecs2.azurewebsites.net/uploads/{task.Id}");
+
+        var downloadUri = this.mediaStorageClient.GetDownloadUrl(task.DemoMediaStoreUri!, 1);
+
+        // var response = await this.matchParserServiceClient.SendMatchForParsing("/parse", downloadUri, callbackUri);
+        // Keep this here until Andrew sets up match parser service
+        var response = new MatchParserServiceResponse { Success = true };
+
+        if (response.Success)
+        {
+            await matchUploadEntityStore.Update(task.Id, (entity) =>
+            {
+                entity.Status = MatchUploadStatus.Processing;
+                entity.LastUpdatedAt = DateTime.UtcNow;
+            });
         }
     }
 }
