@@ -14,6 +14,7 @@ using InHouseCS2.Core.EntityStores.Contracts.Models;
 Env.Load();
 
 var builder = WebApplication.CreateBuilder(args);
+builder.Services.AddApplicationInsightsTelemetry();
 
 // Add services to the container.
 builder.Services.AddControllers();
@@ -62,10 +63,6 @@ builder.Services.AddScoped<IUploadsManager>(serviceProvider =>
         serviceProvider.GetRequiredService<IMatchParserServiceClient>(),
         serviceProvider.GetRequiredService<ILogger<UploadsManager>>());
 });
-
-builder.Logging.ClearProviders();
-builder.Logging.AddConsole();
-builder.Logging.AddDebug();
 
 var app = builder.Build();
 
