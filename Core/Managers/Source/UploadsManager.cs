@@ -148,7 +148,8 @@ public class UploadsManager : IUploadsManager
 
     public async Task<string?> GetMatchUploadStatus(int id)
     {
-        this.logger.LogWarning("Got here");
+        this.logger.LogInformation("Got here info");
+        this.logger.LogWarning("Got here warning");
         var matchUploadEntityStore = this.transactionOperation.GetEntityStore<MatchUploadEntity, int>();
         var matchUploadEntity = await matchUploadEntityStore.Get(id);
         return matchUploadEntity is null ? null : matchUploadEntity.Status.ToString();

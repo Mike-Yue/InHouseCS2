@@ -16,6 +16,7 @@ Env.Load();
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddApplicationInsightsTelemetry();
 builder.Logging.AddApplicationInsights();
+builder.Logging.SetMinimumLevel(LogLevel.Information);
 
 // Add services to the container.
 builder.Services.AddControllers();
