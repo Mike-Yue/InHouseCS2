@@ -212,7 +212,7 @@ public class UploadsManager : IUploadsManager
                 {
                     try
                     {
-                        await this.SendToMatchParserService(matchUploadEntity, matchUploadEntityStore);
+                        await this.SendToMatchParserService(matchUploadEntity);
                     }
                     catch (Exception ex)
                     {
@@ -227,9 +227,7 @@ public class UploadsManager : IUploadsManager
         }
     }
 
-    private async Task SendToMatchParserService(
-        MatchUploadEntity task,
-        IEntityStore<MatchUploadEntity, int> matchUploadEntityStore)
+    private async Task SendToMatchParserService(MatchUploadEntity task)
     {
         this.logger.LogInformation($"Executing work on {task.Id}");
 
@@ -243,6 +241,7 @@ public class UploadsManager : IUploadsManager
 
         if (response.Success)
         {
+            var matchUploadEntityStore = this.transactionOperation.GetEntityStore<MatchUploadEntity, int>();
             await matchUploadEntityStore.Update(task.Id, (entity) =>
             {
                 entity.Status = MatchUploadStatus.Processing;

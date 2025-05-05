@@ -25,7 +25,6 @@ builder.Services.Configure<LoggerFilterOptions>(options =>
         options.Rules.Remove(defaultRule);
     }
 
-    // Optionally, add your own rule to allow more detailed logs
     options.AddFilter<Microsoft.Extensions.Logging.ApplicationInsights.ApplicationInsightsLoggerProvider>(
         "", LogLevel.Information);
 });
