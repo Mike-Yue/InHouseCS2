@@ -15,6 +15,20 @@ Env.Load();
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddApplicationInsightsTelemetry();
+builder.Services.Configure<LoggerFilterOptions>(options =>
+{
+    var defaultRule = options.Rules.FirstOrDefault(rule =>
+        rule.ProviderName == "Microsoft.Extensions.Logging.ApplicationInsights.ApplicationInsightsLoggerProvider");
+
+    if (defaultRule is not null)
+    {
+        options.Rules.Remove(defaultRule);
+    }
+
+    // Optionally, add your own rule to allow more detailed logs
+    options.AddFilter<Microsoft.Extensions.Logging.ApplicationInsights.ApplicationInsightsLoggerProvider>(
+        "", LogLevel.Information);
+});
 builder.Logging.AddApplicationInsights();
 builder.Logging.SetMinimumLevel(LogLevel.Information);
 
