@@ -38,6 +38,11 @@ public class AzureSqlEntityStore<T, TId> : IEntityStore<T, TId> where T : BaseEn
     {
         return await this.dbSet.Where(filterFunc).SingleOrDefaultAsync();
     }
+    public Task<List<TResult>> QueryAsync<TResult>(Func<IQueryable<T>, IQueryable<TResult>> query)
+    {
+        return query(this.dbContext.Set<T>()).ToListAsync();
+    }
+
 
     public async Task<T?> Get(TId id)
     {

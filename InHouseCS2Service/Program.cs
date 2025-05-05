@@ -83,6 +83,8 @@ builder.Services.AddScoped<IUploadsManager>(serviceProvider =>
         serviceProvider.GetRequiredService<ILogger<UploadsManager>>());
 });
 
+builder.Services.AddScoped<IMatchesManager, MatchesManager>();
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.

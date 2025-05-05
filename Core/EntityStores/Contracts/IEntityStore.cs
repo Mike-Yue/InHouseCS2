@@ -11,6 +11,8 @@ public interface IEntityStore<T, TId> where T: BaseEntity
     public Task<List<T>> FindAll(Expression<Func<T, bool>> filterFunc);
     public Task<T?> FindOnly(Expression<Func<T, bool>> filterFunc);
 
+    Task<List<TResult>> QueryAsync<TResult>(Func<IQueryable<T>, IQueryable<TResult>> query);
+
     public Task<T> Create(Func<T> createFunc);
 
     public Task<T> Update(TId id, Action<T> updateFunc);

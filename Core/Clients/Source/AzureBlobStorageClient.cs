@@ -18,10 +18,9 @@ public class AzureBlobStorageClient : IMediaStorageClient
 
     public MediaUploadInfo GetUploadUrl(string fileExtension, double hoursValidFor)
     {
-        this.logger.LogInformation($"Can generate SAS URI - {this.blobContainerClient.CanGenerateSasUri}");
         var guid = Guid.NewGuid();
         var blobClient = this.blobContainerClient.GetBlobClient($"{guid}.{fileExtension}");
-        this.logger.LogInformation($"Blob URI is: {blobClient.Uri}");
+        this.logger.LogInformation($"Blob URI is: {blobClient.Uri} - Generating Upload URL");
 
         var blobSasBuilder = new BlobSasBuilder()
         {
@@ -39,10 +38,9 @@ public class AzureBlobStorageClient : IMediaStorageClient
 
     public Uri GetDownloadUrl(string fileUri, double hoursValidFor)
     {
-        this.logger.LogInformation($"Can generate SAS URI - {this.blobContainerClient.CanGenerateSasUri}");
         var guid = Guid.NewGuid();
         var blobClient = this.blobContainerClient.GetBlobClient(fileUri);
-        this.logger.LogInformation($"Blob URI is: {blobClient.Uri}");
+        this.logger.LogInformation($"Blob URI is: {blobClient.Uri} - Generating Download URL");
 
         var blobSasBuilder = new BlobSasBuilder()
         {

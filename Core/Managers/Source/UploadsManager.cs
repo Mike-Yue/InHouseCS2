@@ -236,7 +236,7 @@ public class UploadsManager : IUploadsManager
 
     private async Task SendToMatchParserService(MatchUploadEntity task, IServiceProvider serviceProvider, ILogger<UploadsManager> logger)
     {
-        logger.LogInformation($"Executing work on {task.Id}");
+        logger.LogInformation($"Executing work on MatchUploadEntity Id {task.Id}");
 
         var callbackUri = new Uri($"https://inhousecs2.azurewebsites.net/uploads/{task.Id}");
 

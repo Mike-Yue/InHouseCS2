@@ -1,5 +1,6 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using InHouseCS2.Core.Managers.Contracts;
 using Microsoft.AspNetCore.Mvc;
+using System.Text.Json;
 
 namespace InHouseCS2Service.Controllers
 {
@@ -7,17 +8,25 @@ namespace InHouseCS2Service.Controllers
     [Route("[controller]")]
     public class MatchesController : ControllerBase
     {
+        private IMatchesManager matchesManager;
         private readonly ILogger<MatchesController> logger;
 
-        public MatchesController(ILogger<MatchesController> logger)
+        public MatchesController(IMatchesManager matchesManager, ILogger<MatchesController> logger)
         {
+            this.matchesManager = matchesManager;
             this.logger = logger;
         }
 
-        [HttpGet]
-        public string Get()
+        [HttpGet("{matchId}")]
+        public async Task<IActionResult> Get(string matchId)
         {
-            return "Matches!";
+            this.logger.LogInformation($"Processing GET request for Match ID {matchId}");
+            var output = await this.matchesManager.GetMatchData(matchId);
+            if (output is null)
+            {
+                return this.NotFound();
+            }
+            return this.Ok(JsonSerializer.Serialize(output));
         }
 
         [HttpPost]
