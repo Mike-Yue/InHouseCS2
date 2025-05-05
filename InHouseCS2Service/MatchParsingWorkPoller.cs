@@ -1,5 +1,6 @@
 ﻿
 using InHouseCS2.Core.Clients.Contracts;
+using InHouseCS2.Core.Common.Contracts;
 using InHouseCS2.Core.EntityStores.Contracts;
 using InHouseCS2.Core.EntityStores.Contracts.Models;
 
@@ -8,11 +9,13 @@ namespace InHouseCS2Service
     public class MatchParsingWorkPoller : BackgroundService
     {
         private readonly IServiceScopeFactory scopeFactory;
+        private readonly IBackgroundTaskQueue taskQueue;
         private readonly ILogger<MatchParsingWorkPoller> logger;
 
-        public MatchParsingWorkPoller(IServiceScopeFactory scopeFactory, ILogger<MatchParsingWorkPoller> logger)
+        public MatchParsingWorkPoller(IServiceScopeFactory scopeFactory, IBackgroundTaskQueue taskQueue, ILogger<MatchParsingWorkPoller> logger)
         {
             this.scopeFactory = scopeFactory;
+            this.taskQueue = taskQueue;
             this.logger = logger;
         }
 
@@ -22,28 +25,19 @@ namespace InHouseCS2Service
 
             while (!stoppingToken.IsCancellationRequested)
             {
-                using var scope = this.scopeFactory.CreateScope();
-                var matchUploadEntityStore = scope.ServiceProvider.GetRequiredService<IEntityStore<MatchUploadEntity, int>>();
-                var matchParserServiceClient = scope.ServiceProvider.GetRequiredService<IMatchParserServiceClient>();
-                var mediaStorageClient = scope.ServiceProvider.GetRequiredService<IMediaStorageClient>();
-
-                var pendingWork = await matchUploadEntityStore.FindAll((x) => x.Status == MatchUploadStatus.Uploaded);
-
-                foreach (var work in pendingWork)
+                var workItem = await this.taskQueue.DequeueBackgroundTask(stoppingToken);
+                _ = Task.Run(async () =>
                 {
                     try
                     {
-                        // Sending the work twice is ok, the webhook Uri MatchParserService updates will be idempotent
-                        await this.SendToMatchParserService(work, matchUploadEntityStore, matchParserServiceClient, mediaStorageClient);
+                        using var scope = this.scopeFactory.CreateScope();
+                        await workItem(scope.ServiceProvider, stoppingToken);
                     }
-                    catch (InvalidOperationException ex)
+                    catch (Exception ex)
                     {
-                        this.logger.LogCritical($"Starting Match Parser work failed with {ex.Message}");
-                        continue;
+                        this.logger.LogCritical($"Background task failed with {ex.Message}");
                     }
-
-                }
-                await Task.Delay(30000, stoppingToken);
+                }, stoppingToken);
             }
             this.logger.LogInformation("Polling service stopped");
         }

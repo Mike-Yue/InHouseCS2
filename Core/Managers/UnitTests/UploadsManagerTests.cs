@@ -3,6 +3,7 @@
 using FluentAssertions;
 using InHouseCS2.Core.Clients.Contracts;
 using InHouseCS2.Core.Common;
+using InHouseCS2.Core.Common.Contracts;
 using InHouseCS2.Core.EntityStores.Contracts;
 using InHouseCS2.Core.EntityStores.Contracts.Models;
 using Microsoft.Extensions.Logging;
@@ -188,6 +189,7 @@ public sealed class UploadsManagerTests
         public Mock<IMediaStorageClient> mockMediaStorageClient = new(MockBehavior.Strict);
         public Mock<ITransactionOperation> mockTransactionOperation = new(MockBehavior.Strict);
         public Mock<IMatchParserServiceClient> mockCatchParserServiceClient = new(MockBehavior.Strict);
+        public Mock<IBackgroundTaskQueue> mockBackgroundTaskQueue = new(MockBehavior.Strict);
         public Mock<IEntityStore<MatchUploadEntity, int>> mockMatchUploadEntityStore = new(MockBehavior.Strict);
 
         public override UploadsManager SetSubject()
@@ -198,6 +200,7 @@ public sealed class UploadsManagerTests
                 mediaStorageClient: this.mockMediaStorageClient.Object,
                 transacationOperation: this.mockTransactionOperation.Object,
                 matchParserServiceClient: this.mockCatchParserServiceClient.Object,
+                backgroundTaskQueue: this.mockBackgroundTaskQueue.Object,
                 logger: logger
                 );
         }

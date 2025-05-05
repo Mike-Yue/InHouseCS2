@@ -1,8 +1,10 @@
 ﻿using InHouseCS2.Core.Clients.Contracts;
+using InHouseCS2.Core.Common.Contracts;
 using InHouseCS2.Core.EntityStores.Contracts;
 using InHouseCS2.Core.EntityStores.Contracts.Models;
 using InHouseCS2.Core.Managers.Contracts;
 using InHouseCS2.Core.Managers.Contracts.Models;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
 namespace InHouseCS2.Core.Managers;
@@ -12,17 +14,20 @@ public class UploadsManager : IUploadsManager
     private readonly IMediaStorageClient mediaStorageClient;
     private readonly ITransactionOperation transactionOperation;
     private readonly IMatchParserServiceClient matchParserServiceClient;
+    private readonly IBackgroundTaskQueue backgroundTaskQueue;
     private readonly ILogger<UploadsManager> logger;
 
     public UploadsManager(
         IMediaStorageClient mediaStorageClient,
         ITransactionOperation transacationOperation,
         IMatchParserServiceClient matchParserServiceClient,
+        IBackgroundTaskQueue backgroundTaskQueue,
         ILogger<UploadsManager> logger)
     {
         this.mediaStorageClient = mediaStorageClient;
         this.transactionOperation = transacationOperation;
         this.matchParserServiceClient = matchParserServiceClient;
+        this.backgroundTaskQueue = backgroundTaskQueue;
         this.logger = logger;
     }
 
@@ -149,7 +154,6 @@ public class UploadsManager : IUploadsManager
     public async Task<string?> GetMatchUploadStatus(int id)
     {
         this.logger.LogInformation("Got here info");
-        this.logger.LogWarning("Got here warning");
         var matchUploadEntityStore = this.transactionOperation.GetEntityStore<MatchUploadEntity, int>();
         var matchUploadEntity = await matchUploadEntityStore.Get(id);
         return matchUploadEntity is null ? null : matchUploadEntity.Status.ToString();
@@ -208,15 +212,18 @@ public class UploadsManager : IUploadsManager
                     matchUploadEntity.Status = MatchUploadStatus.Uploaded;
                     matchUploadEntity.LastUpdatedAt = DateTime.Now;
                 });
-                _ = Task.Run(async () =>
+                this.backgroundTaskQueue.EnqueueBackgroundTask(async (serviceProvider, cancellationToken) =>
                 {
+                    var logger = serviceProvider.GetRequiredService<ILogger<UploadsManager>>();
+                    // var transactionOperation = serviceProvider.GetRequiredService<ITransactionOperation>();
+
                     try
                     {
-                        await this.SendToMatchParserService(matchUploadEntity);
+                        await this.SendToMatchParserService(matchUploadEntity, serviceProvider, logger);
                     }
                     catch (Exception ex)
                     {
-                        this.logger.LogError($"Error sending Match demo to MatchParserService: {ex.Message}");
+                        logger.LogError(ex, "Error sending match demo");
                     }
                 });
             });
@@ -227,13 +234,13 @@ public class UploadsManager : IUploadsManager
         }
     }
 
-    private async Task SendToMatchParserService(MatchUploadEntity task)
+    private async Task SendToMatchParserService(MatchUploadEntity task, IServiceProvider serviceProvider, ILogger<UploadsManager> logger)
     {
-        this.logger.LogInformation($"Executing work on {task.Id}");
+        logger.LogInformation($"Executing work on {task.Id}");
 
         var callbackUri = new Uri($"https://inhousecs2.azurewebsites.net/uploads/{task.Id}");
 
-        var downloadUri = this.mediaStorageClient.GetDownloadUrl(task.DemoMediaStoreUri!, 1);
+        var downloadUri = serviceProvider.GetRequiredService<IMediaStorageClient>().GetDownloadUrl(task.DemoMediaStoreUri!, 1);
 
         // var response = await this.matchParserServiceClient.SendMatchForParsing("/parse", downloadUri, callbackUri);
         // Keep this here until Andrew sets up match parser service
@@ -241,7 +248,7 @@ public class UploadsManager : IUploadsManager
 
         if (response.Success)
         {
-            var matchUploadEntityStore = this.transactionOperation.GetEntityStore<MatchUploadEntity, int>();
+            var matchUploadEntityStore = serviceProvider.GetRequiredService<ITransactionOperation>().GetEntityStore<MatchUploadEntity, int>();
             await matchUploadEntityStore.Update(task.Id, (entity) =>
             {
                 entity.Status = MatchUploadStatus.Processing;
