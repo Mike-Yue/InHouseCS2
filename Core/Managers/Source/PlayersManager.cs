@@ -45,9 +45,9 @@ public class PlayersManager : IPlayersManager
                     BurnDamage = g.Average(pms => pms.FireGrenadeDamage),
                     EnemiesFlashed = g.Average(pms => pms.EnemiesFlashed),
                     GamesWon = g.Count(pms => pms.WonMatch),
-                    GamesLost = g.Count(pms => !pms.WonMatch),
+                    GamesLost = g.Count(pms => !pms.WonMatch && !pms.TiedMatch),
                     GamesTied = g.Count(pms => pms.TiedMatch), // need to fix this
-                    WinPercentage = (g.Count(pms => pms.WonMatch) + g.Count(pms => pms.TiedMatch)) / g.Count()
+                    WinPercentage = Convert.ToDouble(g.Count(pms => pms.WonMatch))*100 / Convert.ToDouble(g.Count())
                 });
         });
         return new PlayerOverallData
