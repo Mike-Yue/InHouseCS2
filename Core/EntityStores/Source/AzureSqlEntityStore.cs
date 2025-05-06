@@ -43,7 +43,6 @@ public class AzureSqlEntityStore<T, TId> : IEntityStore<T, TId> where T : BaseEn
         return query(this.dbContext.Set<T>()).ToListAsync();
     }
 
-
     public async Task<T?> Get(TId id)
     {
         return await this.dbSet.FindAsync(id);

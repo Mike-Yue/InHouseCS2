@@ -88,7 +88,6 @@ public class UploadsManager : IUploadsManager
                         return new PlayerEntity
                         {
                             SteamId = Convert.ToInt64(entry.SteamId),
-                            Elo = 1000
                         };
                     });
                 }

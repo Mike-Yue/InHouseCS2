@@ -7,8 +7,8 @@ public class PlayerEntity : BaseEntity
     [Key]
     [DatabaseGenerated(DatabaseGeneratedOption.None)]
     public required long SteamId { get; set; }
-    public int Elo { get; set; } = 1000;
-
+    public double Rating { get; set; } = 1000;
+    public double Deviation { get; set; } = 1000 / 3;
     public ICollection<KillEventEntity> Kills { get; set; } = new List<KillEventEntity>();
     public ICollection<KillEventEntity> Deaths { get; set; } = new List<KillEventEntity>();
     public ICollection<PlayerMatchStatEntity> PlayerMatchStats { get; set; } = new List<PlayerMatchStatEntity>();

@@ -21,6 +21,8 @@
     <ProjectReference Include="..\Core\Common\Source\InHouseCS2.Core.Common.csproj" />
     <ProjectReference Include="..\Core\EntityStores\Source\InHouseCS2.Core.EntityStores.csproj" />
     <ProjectReference Include="..\Core\Managers\Source\InHouseCS2.Core.Managers.csproj" />
+    <ProjectReference Include="..\Core\Ratings\Contracts\InHouseCS2.Core.Ratings.Contracts.csproj" />
+    <ProjectReference Include="..\Core\Ratings\Source\InHouseCS2.Core.Ratings.csproj" />
   </ItemGroup>
 
 </Project>

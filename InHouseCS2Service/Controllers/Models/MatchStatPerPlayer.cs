@@ -24,6 +24,7 @@ public class MatchStatPerPlayer
 
     // Misc stats
     public required bool WonMatch { get; init; }
+    public required bool TiedMatch { get; init; }
     public required string StartingTeam { get; init; } //T or CT
 
 }

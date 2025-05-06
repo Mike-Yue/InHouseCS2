@@ -12,6 +12,9 @@ using InHouseCS2Service;
 using InHouseCS2.Core.EntityStores.Contracts.Models;
 using InHouseCS2.Core.Common.Contracts;
 using InHouseCS2.Core.Common;
+using InHouseCS2.Core.Ratings.Contracts;
+using InHouseCS2.Core.Ratings;
+using Moserware.Skills;
 
 Env.Load();
 
@@ -43,6 +46,17 @@ builder.Services.AddAutoMapper(typeof(MappingProfile));
 builder.Services.AddHttpClient("MatchParserHttpClient", (httpClient) =>
 {
     httpClient.BaseAddress = new Uri("https://andrew-server.com/");
+});
+builder.Services.AddScoped<IRatingCalculator>(serviceProvider =>
+{
+    var gameInfo = new GameInfo(
+            initialMean: 1000.0,
+            initialStandardDeviation: 333.33,
+            beta: 166.67,
+            dynamicFactor: 3.33,
+            drawProbability: 0.001
+        );
+    return new RatingCalculator(gameInfo, serviceProvider.GetRequiredService<ILogger<RatingCalculator>>());
 });
 
 builder.Services.AddSingleton<IBackgroundTaskQueue, BackgroundTaskQueue>();
@@ -84,6 +98,7 @@ builder.Services.AddScoped<IUploadsManager>(serviceProvider =>
 
 builder.Services.AddScoped<IMatchesManager, MatchesManager>();
 builder.Services.AddScoped<IPlayersManager, PlayersManager>();
+builder.Services.AddScoped<IRatingManager, RatingManager>();
 
 var app = builder.Build();
 

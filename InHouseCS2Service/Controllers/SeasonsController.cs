@@ -22,6 +22,10 @@ namespace InHouseCS2Service.Controllers
         public async Task<IActionResult> Get(string seasonId)
         {
             var season = await this.seasonEntityStore.Get(Int32.Parse(seasonId));
+            if (season is null)
+            {
+                return this.NotFound($"Season {seasonId} not found");
+            }
             return this.Ok($"Season {season.Name}, {season.StartDate}-{season.EndDate}");
         }
 
