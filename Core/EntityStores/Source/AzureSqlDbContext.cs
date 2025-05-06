@@ -82,8 +82,7 @@ namespace InHouseCS2.Core.EntityStores
                 .OnDelete(DeleteBehavior.Cascade);
 
             modelBuilder.Entity<KillEventEntity>()
-                .HasIndex(k => new { k.KillerId, k.VictimId, k.MatchId })
-                .IsUnique();
+                .HasIndex(k => new { k.KillerId, k.VictimId, k.MatchId });
 
             modelBuilder.Entity<PlayerEntity>();
         }

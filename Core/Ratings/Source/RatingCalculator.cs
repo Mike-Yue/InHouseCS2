@@ -39,12 +39,10 @@ public class RatingCalculator : IRatingCalculator
                 var losingTeam = new Team();
                 foreach(var winningPlayer in matchEntity.PlayerMatchStats.Where((pms) => pms.WonMatch))
                 {
-                    this.logger.LogInformation($"Adding player {winningPlayer.PlayerId}");
                     winningTeam.AddPlayer(steamIdToPlayerMap[winningPlayer.PlayerId], steamIdToRatingMap[winningPlayer.PlayerId]);
                 }
                 foreach (var losingPlayer in matchEntity.PlayerMatchStats.Where((pms) => !pms.WonMatch))
                 {
-                    this.logger.LogInformation($"Adding player {losingPlayer.PlayerId}");
                     losingTeam.AddPlayer(steamIdToPlayerMap[losingPlayer.PlayerId], steamIdToRatingMap[losingPlayer.PlayerId]);
                 }
                 
