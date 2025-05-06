@@ -79,13 +79,13 @@ def generate_match_data():
                 "losingScore": losing_score
             },
             "matchStatPerPlayers": match_stat_per_players,
-            "matchKills": []
+            "matchKills": match_kills,
         }
     }
 
 if __name__ == "__main__":
     # Define the URL of the API endpoint
-    for i in range(1000):
+    for i in range(200):
         url = "https://inhousecs2.azurewebsites.net/uploads/url"
         output = requests.post(url, json={
             "demoFingerPrint": uuid.uuid4().hex,
