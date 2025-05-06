@@ -13,20 +13,17 @@ public class UploadsManager : IUploadsManager
 {
     private readonly IMediaStorageClient mediaStorageClient;
     private readonly ITransactionOperation transactionOperation;
-    private readonly IMatchParserServiceClient matchParserServiceClient;
     private readonly IBackgroundTaskQueue backgroundTaskQueue;
     private readonly ILogger<UploadsManager> logger;
 
     public UploadsManager(
         IMediaStorageClient mediaStorageClient,
         ITransactionOperation transacationOperation,
-        IMatchParserServiceClient matchParserServiceClient,
         IBackgroundTaskQueue backgroundTaskQueue,
         ILogger<UploadsManager> logger)
     {
         this.mediaStorageClient = mediaStorageClient;
         this.transactionOperation = transacationOperation;
-        this.matchParserServiceClient = matchParserServiceClient;
         this.backgroundTaskQueue = backgroundTaskQueue;
         this.logger = logger;
     }

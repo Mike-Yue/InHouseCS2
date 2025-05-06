@@ -41,29 +41,5 @@ namespace InHouseCS2Service
             }
             this.logger.LogInformation("Polling service stopped");
         }
-
-        private async Task SendToMatchParserService(
-            MatchUploadEntity task,
-            IEntityStore<MatchUploadEntity, int> matchUploadEntityStore,
-            IMatchParserServiceClient matchParserServiceClient,
-            IMediaStorageClient mediaStorageClient)
-        {
-            this.logger.LogInformation($"Executing work on {task.Id}");
-
-            var callbackUri = new Uri($"https://inhousecs2.azurewebsites.net/uploads/{task.Id}");
-
-            var downloadUri = mediaStorageClient.GetDownloadUrl(task.DemoMediaStoreUri!, 1);
-
-            var response = await matchParserServiceClient.SendMatchForParsing("/parse", downloadUri, callbackUri);
-
-            if (response.Success)
-            {
-                await matchUploadEntityStore.Update(task.Id, (entity) =>
-                {
-                    entity.Status = MatchUploadStatus.Processing;
-                    entity.LastUpdatedAt = DateTime.UtcNow;
-                });
-            }
-        }
     }
 }
