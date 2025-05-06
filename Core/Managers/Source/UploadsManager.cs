@@ -115,6 +115,7 @@ public class UploadsManager : IUploadsManager
                         HighExplosiveGrenadeDamage = entry.HighExplosiveGrenadeDamage,
                         FireGrenadeDamage = entry.FireGrenadeDamage,
                         WonMatch = entry.WonMatch,
+                        TiedMatch = entry.TiedMatch,
                         StartingTeam = entry.StartingTeam
                     };
                 });

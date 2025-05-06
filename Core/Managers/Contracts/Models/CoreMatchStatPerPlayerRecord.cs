@@ -23,5 +23,6 @@ public record CoreMatchStatPerPlayerRecord
 
     // Misc stats
     public required bool WonMatch { get; init; }
+    public required bool TiedMatch { get; set; }
     public required string StartingTeam { get; init; } //T or CT
 }

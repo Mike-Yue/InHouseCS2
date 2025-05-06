@@ -84,6 +84,7 @@ builder.Services.AddScoped<IUploadsManager>(serviceProvider =>
 });
 
 builder.Services.AddScoped<IMatchesManager, MatchesManager>();
+builder.Services.AddScoped<IPlayersManager, PlayersManager>();
 
 var app = builder.Build();
 

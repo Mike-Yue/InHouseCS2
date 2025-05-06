@@ -31,5 +31,6 @@ public class PlayerMatchStatEntity : BaseEntity
 
     // Misc stats
     public required bool WonMatch { get; set; }
+    public required bool TiedMatch { get; set; }
     public required string StartingTeam { get; set; } //T or CT
 }
