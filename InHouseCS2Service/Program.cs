@@ -100,7 +100,18 @@ builder.Services.AddScoped<IMatchesManager, MatchesManager>();
 builder.Services.AddScoped<IPlayersManager, PlayersManager>();
 builder.Services.AddScoped<IRatingManager, RatingManager>();
 
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowFrontend", policy =>
+    {
+        policy.WithOrigins("http://localhost:3000") // your frontend's origin
+              .AllowAnyHeader()
+              .AllowAnyMethod();
+    });
+});
+
 var app = builder.Build();
+app.UseCors("AllowFrontend");
 
 // Configure the HTTP request pipeline.
 //if (app.Environment.IsDevelopment())
