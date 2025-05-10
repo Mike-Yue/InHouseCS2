@@ -57,6 +57,9 @@ public class UploadsManager : IUploadsManager
             var playerEntityStore = operation.GetEntityStore<PlayerEntity, long>();
             var playerMatchStatEntityStore = operation.GetEntityStore<PlayerMatchStatEntity, int>();
             var killEventEntityStore = operation.GetEntityStore<KillEventEntity, int>();
+            var seasonEntityStore = operation.GetEntityStore<SeasonEntity, int>();
+
+            var latestSeason = (await seasonEntityStore.QueryAsync(seasons => seasons.OrderByDescending(season => season.EndDate))).First();
 
             var matchUploadEntity = await matchUploadEntityStore.Update(matchUploadId, (entity) =>
             {
@@ -74,7 +77,7 @@ public class UploadsManager : IUploadsManager
                     WinScore = coreMatchDataRecord.MatchMetadata.WinningScore,
                     LoseScore = coreMatchDataRecord.MatchMetadata.LosingScore,
                     MatchUploadEntityId = matchUploadId,
-                    SeasonEntityId = 1
+                    SeasonEntityId = latestSeason.Id,
                 };
             });
 
@@ -158,6 +161,17 @@ public class UploadsManager : IUploadsManager
 
     public async Task<UploadMetaData?> GetUploadURL(string fileFingerprint, DateTime matchPlayedAt)
     {
+        var seasonEntityStore = this.transactionOperation.GetEntityStore<SeasonEntity, int>();
+        var latestSeason = (await seasonEntityStore.QueryAsync(seasons => seasons.OrderByDescending(season => season.EndDate))).First();
+        if (matchPlayedAt > latestSeason.EndDate)
+        {
+            throw new Exception("No new season created yet");
+        }
+        else if (matchPlayedAt < latestSeason.StartDate)
+        {
+            throw new Exception("Cannot upload match that was played in a season that isn't current season");
+        }
+
         var matchUploadEntityStore = this.transactionOperation.GetEntityStore<MatchUploadEntity, int>();
 
         // Only allowed to try and upload demo if 

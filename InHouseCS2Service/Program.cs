@@ -99,6 +99,7 @@ builder.Services.AddScoped<IUploadsManager>(serviceProvider =>
 builder.Services.AddScoped<IMatchesManager, MatchesManager>();
 builder.Services.AddScoped<IPlayersManager, PlayersManager>();
 builder.Services.AddScoped<IRatingManager, RatingManager>();
+builder.Services.AddScoped<ISeasonsManager, SeasonsManager>();
 
 builder.Services.AddCors(options =>
 {
