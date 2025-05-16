@@ -8,6 +8,8 @@ public class SeasonLeaderboardPlayerData
     public required double Deaths { get; init; }
     public required double KD { get; init; }
     public required decimal HSP { get; init; }
+
+    public required int MatchesPlayed { get; init; }
     public required double WinPercentage { get; init; }
     public required double Rating { get; init; }
 }

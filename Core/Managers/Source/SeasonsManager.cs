@@ -58,6 +58,7 @@ public class SeasonsManager : ISeasonsManager
                 Deaths = g.Sum(pmse => pmse.Deaths),
                 KD = g.Average(pms => pms.Kills) / g.Average(pms => pms.Deaths),
                 HSP = g.Average(pms => pms.HeadshotKillPercentage),
+                MatchesPlayed = g.Count(),
                 WinPercentage = Convert.ToDouble(g.Count(pms => pms.WonMatch)) * 100 / Convert.ToDouble(g.Count()),
                 Rating = g.Select(pmse => pmse.Player.Rating).First(),
             })
