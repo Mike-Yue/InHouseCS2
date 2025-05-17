@@ -9,9 +9,9 @@ namespace InHouseCS2Service.Controllers
     public class PlayersController : ControllerBase
     {
         private IPlayersManager playersManager;
-        private readonly ILogger<MatchesController> logger;
+        private readonly ILogger<PlayersController> logger;
 
-        public PlayersController(IPlayersManager playersManager, ILogger<MatchesController> logger)
+        public PlayersController(IPlayersManager playersManager, ILogger<PlayersController> logger)
         {
             this.playersManager = playersManager;
             this.logger = logger;

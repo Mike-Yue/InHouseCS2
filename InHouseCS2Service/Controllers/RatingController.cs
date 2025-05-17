@@ -8,9 +8,9 @@ namespace InHouseCS2Service.Controllers
     public class RatingController : ControllerBase
     {
         private IRatingManager ratingManager;
-        private readonly ILogger<MatchesController> logger;
+        private readonly ILogger<RatingController> logger;
 
-        public RatingController(IRatingManager ratingManager, ILogger<MatchesController> logger)
+        public RatingController(IRatingManager ratingManager, ILogger<RatingController> logger)
         {
             this.ratingManager = ratingManager;
             this.logger = logger;
