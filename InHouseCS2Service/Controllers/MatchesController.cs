@@ -1,6 +1,8 @@
 ﻿using InHouseCS2.Core.Managers.Contracts;
+using InHouseCS2.Core.Managers.Contracts.Models;
 using Microsoft.AspNetCore.Mvc;
 using System.Text.Json;
+using System.Threading.Tasks;
 
 namespace InHouseCS2Service.Controllers
 {
@@ -29,11 +31,15 @@ namespace InHouseCS2Service.Controllers
             return this.Ok(JsonSerializer.Serialize(output));
         }
 
-        [HttpPost]
-        public string Post()
+        [HttpPost("generateTeams")]
+        public async Task<IActionResult> Post([FromBody] MatchPlayerList matchPlayerList)
         {
-            this.logger.LogWarning("He;pp");
-            return "Post!";
+            var output = await this.matchesManager.GenerateMatchTeams(matchPlayerList);
+            if (output is null)
+            {
+                return this.BadRequest("Generating teams failed");
+            }
+            return this.Ok(JsonSerializer.Serialize(output));
         }
 
     }

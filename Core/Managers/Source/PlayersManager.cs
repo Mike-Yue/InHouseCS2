@@ -22,11 +22,17 @@ public class PlayersManager : IPlayersManager
     {
         var playerMatchEntityStore = this.transactionOperation.GetEntityStore<PlayerMatchStatEntity, int>();
         var playerEntityStore = this.transactionOperation.GetEntityStore<PlayerEntity, long>();
-
-        if ((await playerEntityStore.Get(playerId)) is null)
+        var playerEntity = await playerEntityStore.Get(playerId);
+        if (playerEntity is null)
         {
             return null;
         }
+        var playerMetadata = new PlayerMetadata
+        {
+            SteamId = playerId,
+            SteamUsername = playerEntity.SteamUsername,
+        };
+
         var playerMapAggregatedData = await playerMatchEntityStore.QueryAsync<PlayerMapAggregatedData>(q =>
         {
             return q.Where(pms => pms.PlayerId == playerId)
@@ -52,6 +58,7 @@ public class PlayersManager : IPlayersManager
         });
         return new PlayerOverallData
         {
+            PlayerMetadata = playerMetadata,
             MapAggregatedDataList = playerMapAggregatedData
         };
     }

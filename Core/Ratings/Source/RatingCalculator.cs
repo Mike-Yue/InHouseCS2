@@ -2,6 +2,8 @@
 using InHouseCS2.Core.Ratings.Contracts;
 using Microsoft.Extensions.Logging;
 using Moserware.Skills;
+using MathNet.Numerics.Distributions;
+using System.Linq;
 
 namespace InHouseCS2.Core.Ratings;
 
@@ -15,6 +17,21 @@ public class RatingCalculator : IRatingCalculator
     {
         this.gameInfo = gameInfo;
         this.logger = logger;
+    }
+
+    public double CalculateMatchQuality(List<PlayerEntity> team1, List<PlayerEntity> team2)
+    {
+        var trueSkillTeam1 = new Team();
+        var trueSkillTeam2 = new Team();
+        foreach (var playerEntity in team1)
+        {
+            trueSkillTeam1.AddPlayer(new Player(playerEntity.SteamId), new Rating(playerEntity.Rating, playerEntity.Deviation));
+        }
+        foreach (var playerEntity in team2)
+        {
+            trueSkillTeam2.AddPlayer(new Player(playerEntity.SteamId), new Rating(playerEntity.Rating, playerEntity.Deviation));
+        }
+        return TrueSkillCalculator.CalculateMatchQuality(this.gameInfo, Teams.Concat(trueSkillTeam1, trueSkillTeam2));
     }
 
     public Dictionary<long, Rating> RecalculateAllGames(List<PlayerEntity> playerEntities, List<MatchEntity> matchEntities)
@@ -65,5 +82,21 @@ public class RatingCalculator : IRatingCalculator
         }
 
         return steamIdToRatingMap;
+    }
+
+    public double CalculateTeam1WinPercentage(List<PlayerEntity> team1, List<PlayerEntity> team2)//(List<Rating> teamA, List<Rating> teamB)
+    {
+        var teamA = team1.Select(playerEntity => new Rating(playerEntity.Rating, playerEntity.Deviation));
+        var teamB = team2.Select(playerEntity => new Rating(playerEntity.Rating, playerEntity.Deviation));
+        double muA = teamA.Sum(p => p.Mean);
+        double sigmaSqA = teamA.Sum(p => p.StandardDeviation * p.StandardDeviation);
+
+        double muB = teamB.Sum(p => p.Mean);
+        double sigmaSqB = teamB.Sum(p => p.StandardDeviation * p.StandardDeviation);
+
+        double denom = Math.Sqrt(sigmaSqA + sigmaSqB + 2 * this.gameInfo.Beta * this.gameInfo.Beta);
+        double deltaMu = muA - muB;
+
+        return Normal.CDF(0, 1, deltaMu / denom); // P(Team A wins)
     }
 }
