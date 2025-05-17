@@ -21,18 +21,33 @@ public class SeasonsManager : ISeasonsManager
     public async Task CreateNextSeason()
     {
         var seasonEntityStore = this.transactionOperation.GetEntityStore<SeasonEntity, int>();
-        var mostRecentSeason = (await seasonEntityStore.QueryAsync(seasons => seasons.OrderByDescending(season => season.EndDate))).First();
-        var startDate = mostRecentSeason.EndDate.AddDays(1);
-        var endDate = startDate.AddMonths(3);
-        await seasonEntityStore.Create(() =>
+        var mostRecentSeason = (await seasonEntityStore.QueryAsync(seasons => seasons.OrderByDescending(season => season.EndDate))).FirstOrDefault();
+        if (mostRecentSeason == default(SeasonEntity))
         {
-            return new SeasonEntity
+            await seasonEntityStore.Create(() =>
             {
-                Name = "Worthy",
-                StartDate = startDate,
-                EndDate = endDate,
-            };
-        });
+                return new SeasonEntity
+                {
+                    Name = "Worthy",
+                    StartDate = DateTime.UtcNow,
+                    EndDate = DateTime.UtcNow.AddMonths(3),
+                };
+            });
+        }
+        else
+        {
+            var startDate = mostRecentSeason.EndDate.AddDays(1);
+            var endDate = startDate.AddMonths(3);
+            await seasonEntityStore.Create(() =>
+            {
+                return new SeasonEntity
+                {
+                    Name = "Worthy",
+                    StartDate = startDate,
+                    EndDate = endDate,
+                };
+            });
+        } 
     }
 
     public async Task<SeasonLeaderboardData?> GetLeaderboardData(int seasonId)
