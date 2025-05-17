@@ -60,16 +60,16 @@ def generate_match_data():
 
     steam_ids = [str(i) for i in range(1, player_count + 1)]
     steam_username_map = {
-        1: "himself",
-        2: "Spare Relations",
-        3: "Lucidit",
-        4: "Wangaroo",
-        5: "ZerO_0",
-        6: "senior",
-        7: "Young",
-        8: "Inoob",
-        9: "Coolguy1002",
-        10: "Dersa",
+        '1': "himself",
+        '2': "Spare Relations",
+        '3': "Lucidit",
+        '4': "Wangaroo",
+        '5': "ZerO_0",
+        '6': "senior",
+        '7': "Young",
+        '8': "Inoob",
+        '9': "Coolguy1002",
+        '10': "Dersa",
     }
     random.shuffle(steam_ids)
     winning_ids = steam_ids[:half]
@@ -98,11 +98,11 @@ def generate_match_data():
 
 if __name__ == "__main__":
     # Define the URL of the API endpoint
-    for i in range(1):
+    for i in range(199):
         url = "https://inhousecs2.azurewebsites.net/uploads/url"
         output = requests.post(url, json={
             "demoFingerPrint": uuid.uuid4().hex,
-            "matchPlayedAt": datetime.datetime.now().isoformat()}
+            "matchPlayedAt": datetime.datetime.now(datetime.timezone.utc).isoformat()}
         )
         response_dict = json.loads(output.text)
         id = response_dict["id"]
