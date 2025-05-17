@@ -9,10 +9,5 @@ public class MappingProfile : Profile
 {
     public MappingProfile()
     {
-        this.CreateMap<MatchDataWrapper, CoreMatchDataWrapperRecord>();
-        this.CreateMap<MatchDataObject, CoreMatchDataRecord>();
-        this.CreateMap<MatchKillData, CoreMatchKillDataRecord>();
-        this.CreateMap<MatchMetadata, CoreMatchMetadataRecord>();
-        this.CreateMap<MatchStatPerPlayer, CoreMatchStatPerPlayerRecord>();
     }
 }

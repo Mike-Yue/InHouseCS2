@@ -2,8 +2,8 @@
 
 namespace InHouseCS2.Core.Managers.Contracts.Models;
 
-public class CoreMatchDataWrapperRecord
+public class MatchDataWrapper
 {
     public required bool FailedToParse { get; init; }
-    public CoreMatchDataRecord? MatchDataObject { get; init; }
+    public MatchData? MatchDataObject { get; init; }
 }

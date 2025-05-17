@@ -72,9 +72,7 @@ namespace InHouseCS2Service.Controllers
         [HttpPost("{matchUploadId}")]
         public async Task<IActionResult> PostMatchUploadId(string matchUploadId, [FromBody] MatchDataWrapper matchDataWrapper)
         {
-
-            var output = this.mapper.Map<CoreMatchDataWrapperRecord>(matchDataWrapper);
-            await this.uploadsManager.FinalizeMatchUploadEntityAndRecordData(Int32.Parse(matchUploadId), output);
+            await this.uploadsManager.FinalizeMatchUploadEntityAndRecordData(Int32.Parse(matchUploadId), matchDataWrapper);
             return this.Ok();
         }
 

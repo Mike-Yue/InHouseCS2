@@ -28,7 +28,7 @@ public class UploadsManager : IUploadsManager
         this.logger = logger;
     }
 
-    public async Task FinalizeMatchUploadEntityAndRecordData(int matchUploadId, CoreMatchDataWrapperRecord coreMatchDataWrapperRecord)
+    public async Task FinalizeMatchUploadEntityAndRecordData(int matchUploadId, MatchDataWrapper coreMatchDataWrapperRecord)
     {
         if (coreMatchDataWrapperRecord.FailedToParse)
         {

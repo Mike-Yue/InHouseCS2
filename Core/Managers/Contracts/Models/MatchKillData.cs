@@ -1,4 +1,4 @@
-﻿namespace InHouseCS2Service.Controllers.Models;
+﻿namespace InHouseCS2.Core.Managers.Models;
 
 public record MatchKillData
 {

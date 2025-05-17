@@ -1,8 +1,8 @@
-﻿namespace InHouseCS2Service.Controllers.Models;
+﻿namespace InHouseCS2.Core.Managers.Models;
 
-public record MatchDataObject
+public record MatchData
 {
-    public required MatchMetadata MatchMetadata { get; init; }
+    public required MatchMetadata MatchMetadata { get; init; }   
     public required List<MatchStatPerPlayer> MatchStatPerPlayers { get; init; }
     public required List<MatchKillData> MatchKills { get; init; }
 }

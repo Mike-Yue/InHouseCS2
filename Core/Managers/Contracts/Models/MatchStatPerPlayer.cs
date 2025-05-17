@@ -1,6 +1,6 @@
 ﻿namespace InHouseCS2.Core.Managers.Models;
 
-public record CoreMatchStatPerPlayerRecord
+public record MatchStatPerPlayer
 {
     public required string SteamId { get; init; }
 

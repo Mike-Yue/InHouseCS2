@@ -1,5 +1,4 @@
 ﻿using InHouseCS2.Core.Managers.Contracts.Models;
-using InHouseCS2.Core.Managers.Models;
 
 namespace InHouseCS2.Core.Managers.Contracts;
 public interface IUploadsManager
@@ -10,5 +9,5 @@ public interface IUploadsManager
 
     public Task UpdateMatchStatusAndPersistWork(Uri mediaStorageUri);
 
-    public Task FinalizeMatchUploadEntityAndRecordData(int matchUploadId, CoreMatchDataWrapperRecord coreMatchDataWrapperRecord);
+    public Task FinalizeMatchUploadEntityAndRecordData(int matchUploadId, MatchDataWrapper coreMatchDataWrapperRecord);
 }
