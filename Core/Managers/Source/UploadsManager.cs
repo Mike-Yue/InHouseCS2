@@ -28,9 +28,9 @@ public class UploadsManager : IUploadsManager
         this.logger = logger;
     }
 
-    public async Task FinalizeMatchUploadEntityAndRecordData(int matchUploadId, MatchDataWrapper coreMatchDataWrapperRecord)
+    public async Task FinalizeMatchUploadEntityAndRecordData(int matchUploadId, MatchDataWrapper matchDataWrapper)
     {
-        if (coreMatchDataWrapperRecord.FailedToParse)
+        if (matchDataWrapper.FailedToParse)
         {
             await this.transactionOperation.ExecuteOperationInTransactionAsync(async (operation) =>
             {
@@ -44,12 +44,12 @@ public class UploadsManager : IUploadsManager
             return;
         }
 
-        if (coreMatchDataWrapperRecord.FailedToParse == false && coreMatchDataWrapperRecord.MatchDataObject is null)
+        if (matchDataWrapper.FailedToParse == false && matchDataWrapper.MatchDataObject is null)
         {
             throw new Exception("Cannot have empty MatchDataObject if FailedToParse is false");
         }
 
-        var coreMatchDataRecord = coreMatchDataWrapperRecord.MatchDataObject!;
+        var coreMatchDataRecord = matchDataWrapper.MatchDataObject!;
         await this.transactionOperation.ExecuteOperationInTransactionAsync(async (operation) =>
         {
             var matchUploadEntityStore = operation.GetEntityStore<MatchUploadEntity, int>();
@@ -91,7 +91,17 @@ public class UploadsManager : IUploadsManager
                         return new PlayerEntity
                         {
                             SteamId = Convert.ToInt64(entry.SteamId),
+                            SteamUsername = entry.SteamUsername,
+                            UsernameLastUpdatedDatetime = matchUploadEntity.MatchPlayedAt,
                         };
+                    });
+                }
+                else if (playerEntity.UsernameLastUpdatedDatetime < matchUploadEntity.MatchPlayedAt)
+                {
+                    await playerEntityStore.Update(playerEntity.SteamId, (playerEntity) =>
+                    {
+                        playerEntity.UsernameLastUpdatedDatetime = matchUploadEntity.MatchPlayedAt;
+                        playerEntity.SteamUsername = entry.SteamUsername;
                     });
                 }
                 await playerMatchStatEntityStore.Create(() =>

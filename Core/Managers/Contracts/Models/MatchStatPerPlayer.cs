@@ -3,6 +3,7 @@
 public record MatchStatPerPlayer
 {
     public required string SteamId { get; init; }
+    public required string SteamUsername { get; init; }
 
     // Individual skill stats
     public required int Kills { get; init; }

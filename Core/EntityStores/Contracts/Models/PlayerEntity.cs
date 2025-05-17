@@ -7,6 +7,8 @@ public class PlayerEntity : BaseEntity
     [Key]
     [DatabaseGenerated(DatabaseGeneratedOption.None)]
     public required long SteamId { get; set; }
+    public required string SteamUsername { get; set; }
+    public required DateTime UsernameLastUpdatedDatetime { get; set; }
     public double Rating { get; set; } = 1000;
     public double Deviation { get; set; } = 1000 / 3;
     public ICollection<KillEventEntity> Kills { get; set; } = new List<KillEventEntity>();
