@@ -25,11 +25,11 @@ public class RatingCalculator : IRatingCalculator
         var trueSkillTeam2 = new Team();
         foreach (var playerEntity in team1)
         {
-            trueSkillTeam1.AddPlayer(new Player(playerEntity.SteamId), new Rating(playerEntity.Rating, playerEntity.Deviation));
+            trueSkillTeam1.AddPlayer(new Player(playerEntity.SteamId), new Rating((double)playerEntity.Rating, (double)playerEntity.Deviation));
         }
         foreach (var playerEntity in team2)
         {
-            trueSkillTeam2.AddPlayer(new Player(playerEntity.SteamId), new Rating(playerEntity.Rating, playerEntity.Deviation));
+            trueSkillTeam2.AddPlayer(new Player(playerEntity.SteamId), new Rating((double)playerEntity.Rating, (double)playerEntity.Deviation));
         }
         return TrueSkillCalculator.CalculateMatchQuality(this.gameInfo, Teams.Concat(trueSkillTeam1, trueSkillTeam2));
     }
@@ -44,11 +44,11 @@ public class RatingCalculator : IRatingCalculator
         var trueSkillTeam2 = new Team();
         foreach (var playerEntity in team1)
         {
-            trueSkillTeam1.AddPlayer(new Player(playerEntity.SteamId), new Rating(playerEntity.Rating, playerEntity.Deviation));
+            trueSkillTeam1.AddPlayer(new Player(playerEntity.SteamId), new Rating((double)playerEntity.Rating, (double)playerEntity.Deviation));
         }
         foreach (var playerEntity in team2)
         {
-            trueSkillTeam2.AddPlayer(new Player(playerEntity.SteamId), new Rating(playerEntity.Rating, playerEntity.Deviation));
+            trueSkillTeam2.AddPlayer(new Player(playerEntity.SteamId), new Rating((double)playerEntity.Rating, (double)playerEntity.Deviation));
         }
         var teams = new List<Team>
         {
@@ -116,8 +116,8 @@ public class RatingCalculator : IRatingCalculator
 
     public double CalculateTeam1WinPercentage(List<PlayerEntity> team1, List<PlayerEntity> team2)//(List<Rating> teamA, List<Rating> teamB)
     {
-        var teamA = team1.Select(playerEntity => new Rating(playerEntity.Rating, playerEntity.Deviation));
-        var teamB = team2.Select(playerEntity => new Rating(playerEntity.Rating, playerEntity.Deviation));
+        var teamA = team1.Select(playerEntity => new Rating((double)playerEntity.Rating, (double)playerEntity.Deviation));
+        var teamB = team2.Select(playerEntity => new Rating((double)playerEntity.Rating, (double)playerEntity.Deviation));
         double muA = teamA.Sum(p => p.Mean);
         double sigmaSqA = teamA.Sum(p => p.StandardDeviation * p.StandardDeviation);
 

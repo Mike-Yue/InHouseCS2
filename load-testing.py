@@ -98,7 +98,7 @@ def generate_match_data():
 
 if __name__ == "__main__":
     # Define the URL of the API endpoint
-    for i in range(1):
+    for i in range(100):
         url = "https://inhousecs2.azurewebsites.net/uploads/url"
         output = requests.post(url, json={
             "demoFingerPrint": uuid.uuid4().hex,

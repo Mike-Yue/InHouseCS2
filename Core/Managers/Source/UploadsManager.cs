@@ -186,8 +186,8 @@ public class UploadsManager : IUploadsManager
                 {
                     await playerEntityStore.Update(key, (playerEntity) =>
                     {
-                        playerEntity.Rating = output[key].rating;
-                        playerEntity.Deviation = output[key].deviation;
+                        playerEntity.Rating = (Decimal)Math.Round(output[key].rating, 4);
+                        playerEntity.Deviation = (Decimal)Math.Round(output[key].deviation, 4);
                     });
                 }
             }
@@ -198,8 +198,8 @@ public class UploadsManager : IUploadsManager
                 {
                     await playerEntityStore.Update(key, (playerEntity) =>
                     {
-                        playerEntity.Rating = output[key].rating;
-                        playerEntity.Deviation = output[key].deviation;
+                        playerEntity.Rating = (Decimal)Math.Round(output[key].rating, 4);
+                        playerEntity.Deviation = (Decimal)Math.Round(output[key].deviation, 4);
                     });
                 }
             }
@@ -210,8 +210,8 @@ public class UploadsManager : IUploadsManager
                 {
                     await playerEntityStore.Update(key, (playerEntity) =>
                     {
-                        playerEntity.Rating = output[key].rating;
-                        playerEntity.Deviation = output[key].deviation;
+                        playerEntity.Rating = (Decimal)Math.Round(output[key].rating, 4);
+                        playerEntity.Deviation = (Decimal)Math.Round(output[key].deviation, 4);
                     });
                 }
             }

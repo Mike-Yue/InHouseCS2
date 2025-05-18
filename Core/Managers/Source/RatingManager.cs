@@ -34,8 +34,8 @@ public class RatingManager : IRatingManager
         {
             await playerEntityStore.Update(steamId, (playerEntity) =>
             {
-                playerEntity.Rating = newRatings[steamId].Mean;
-                playerEntity.Deviation = newRatings[steamId].StandardDeviation;
+                playerEntity.Rating = (Decimal)Math.Round(newRatings[steamId].Mean, 4);
+                playerEntity.Deviation = (Decimal)Math.Round(newRatings[steamId].StandardDeviation, 4);
             });
         }
     }

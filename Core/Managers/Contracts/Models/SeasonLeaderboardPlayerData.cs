@@ -11,5 +11,5 @@ public class SeasonLeaderboardPlayerData
 
     public required int MatchesPlayed { get; init; }
     public required double WinPercentage { get; init; }
-    public required double Rating { get; init; }
+    public required decimal Rating { get; init; }
 }

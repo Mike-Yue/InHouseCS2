@@ -23,6 +23,14 @@ namespace InHouseCS2.Core.EntityStores
             //    modelBuilder.Entity(entityType);
             //}
 
+            modelBuilder.Entity<PlayerEntity>()
+                .Property(p => p.Rating)
+                .HasPrecision(8, 4);
+
+            modelBuilder.Entity<PlayerEntity>()
+                .Property(p => p.Deviation)
+                .HasPrecision(7, 4);
+
             modelBuilder.Entity<MatchEntity>()
                 .HasOne(m => m.MatchUpload)
                 .WithOne(mu => mu.Match)
@@ -58,6 +66,14 @@ namespace InHouseCS2.Core.EntityStores
 
             modelBuilder.Entity<PlayerMatchStatEntity>()
                 .Property(p => p.HeadshotKillPercentage)
+                .HasPrecision(6, 3);
+
+            modelBuilder.Entity<PlayerMatchStatEntity>()
+                .Property(p => p.HLTVRating)
+                .HasPrecision(4, 2);
+
+            modelBuilder.Entity<PlayerMatchStatEntity>()
+                .Property(p => p.KASTRating)
                 .HasPrecision(6, 3);
 
             // KillEvent → Player (Killer)
