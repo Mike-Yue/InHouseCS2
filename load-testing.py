@@ -14,7 +14,7 @@ def generate_match_data():
     def random_team():
         return random.choice(["ct", "t"])
 
-    def generate_player_stat(steam_id, won, tied):
+    def generate_player_stat(steam_id, won, tied, team):
         return {
             "steamId": str(steam_id),
             "steamUsername": steam_username_map[steam_id],
@@ -33,7 +33,7 @@ def generate_match_data():
             "fireGrenadeDamage": random.randint(0, 500),
             "wonMatch": won,
             "tiedMatch": tied,
-            "startingTeam": random_team()
+            "startingTeam": team
         }
 
     def generate_kill_event(player_ids):
@@ -76,9 +76,9 @@ def generate_match_data():
     losing_ids = steam_ids[half:]
 
     match_stat_per_players = [
-        generate_player_stat(steam_id, True, False) for steam_id in winning_ids
+        generate_player_stat(steam_id, True, False, "ct") for steam_id in winning_ids
     ] + [
-        generate_player_stat(steam_id, False, False) for steam_id in losing_ids
+        generate_player_stat(steam_id, False, False, "t") for steam_id in losing_ids
     ]
 
     match_kills = [generate_kill_event(steam_ids) for _ in range(random.randint(5, 20))]
@@ -98,20 +98,27 @@ def generate_match_data():
 
 if __name__ == "__main__":
     # Define the URL of the API endpoint
-    for i in range(100):
+    
+    for i in range(200):
         url = "https://inhousecs2.azurewebsites.net/uploads/url"
         output = requests.post(url, json={
             "demoFingerPrint": uuid.uuid4().hex,
             "matchPlayedAt": datetime.datetime.now(datetime.timezone.utc).isoformat()}
         )
+        match_data = generate_match_data()
+        winningPlayers= []
+        losingPlayers = []
+        for stat in match_data['matchDataObject']['matchStatPerPlayers']:
+            if stat['wonMatch']:
+                winningPlayers.append("{}-{}".format(stat['steamUsername'], stat['startingTeam']))
+            else:
+                losingPlayers.append("{}-{}".format(stat['steamUsername'], stat['startingTeam']))
+        print(winningPlayers, losingPlayers)
         response_dict = json.loads(output.text)
         id = response_dict["id"]
         match_url = "https://inhousecs2.azurewebsites.net/uploads/{}".format(id)
-        output = requests.post(match_url, json=generate_match_data())
+        output = requests.post(match_url, json=match_data)
         if output.status_code == 200:
             print("Data sent successfully!")
         else:
             print("Failed to send data. Status code:", output.status_code)
-
-
-
