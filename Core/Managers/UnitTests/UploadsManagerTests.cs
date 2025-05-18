@@ -6,6 +6,7 @@ using InHouseCS2.Core.Common;
 using InHouseCS2.Core.Common.Contracts;
 using InHouseCS2.Core.EntityStores.Contracts;
 using InHouseCS2.Core.EntityStores.Contracts.Models;
+using InHouseCS2.Core.Ratings.Contracts;
 using Microsoft.Extensions.Logging;
 using Moq;
 using System.Linq.Expressions;
@@ -189,6 +190,7 @@ public sealed class UploadsManagerTests
         public Mock<IMediaStorageClient> mockMediaStorageClient = new(MockBehavior.Strict);
         public Mock<ITransactionOperation> mockTransactionOperation = new(MockBehavior.Strict);
         public Mock<IBackgroundTaskQueue> mockBackgroundTaskQueue = new(MockBehavior.Strict);
+        public Mock<IRatingCalculator> mockRatingCalculator = new(MockBehavior.Strict);
         public Mock<IEntityStore<MatchUploadEntity, int>> mockMatchUploadEntityStore = new(MockBehavior.Strict);
 
         public override UploadsManager SetSubject()
@@ -199,6 +201,7 @@ public sealed class UploadsManagerTests
                 mediaStorageClient: this.mockMediaStorageClient.Object,
                 transacationOperation: this.mockTransactionOperation.Object,
                 backgroundTaskQueue: this.mockBackgroundTaskQueue.Object,
+                ratingCalculator: this.mockRatingCalculator.Object,
                 logger: logger
                 );
         }

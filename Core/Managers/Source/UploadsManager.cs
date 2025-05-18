@@ -4,6 +4,7 @@ using InHouseCS2.Core.EntityStores.Contracts;
 using InHouseCS2.Core.EntityStores.Contracts.Models;
 using InHouseCS2.Core.Managers.Contracts;
 using InHouseCS2.Core.Managers.Contracts.Models;
+using InHouseCS2.Core.Ratings.Contracts;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
@@ -14,17 +15,20 @@ public class UploadsManager : IUploadsManager
     private readonly IMediaStorageClient mediaStorageClient;
     private readonly ITransactionOperation transactionOperation;
     private readonly IBackgroundTaskQueue backgroundTaskQueue;
+    private readonly IRatingCalculator ratingCalculator;
     private readonly ILogger<UploadsManager> logger;
 
     public UploadsManager(
         IMediaStorageClient mediaStorageClient,
         ITransactionOperation transacationOperation,
         IBackgroundTaskQueue backgroundTaskQueue,
+        IRatingCalculator ratingCalculator,
         ILogger<UploadsManager> logger)
     {
         this.mediaStorageClient = mediaStorageClient;
         this.transactionOperation = transacationOperation;
         this.backgroundTaskQueue = backgroundTaskQueue;
+        this.ratingCalculator = ratingCalculator;
         this.logger = logger;
     }
 
@@ -58,6 +62,9 @@ public class UploadsManager : IUploadsManager
             var playerMatchStatEntityStore = operation.GetEntityStore<PlayerMatchStatEntity, int>();
             var killEventEntityStore = operation.GetEntityStore<KillEventEntity, int>();
             var seasonEntityStore = operation.GetEntityStore<SeasonEntity, int>();
+
+            var team1 = new List<PlayerEntity>();
+            var team2 = new List<PlayerEntity>();
 
             var latestSeason = (await seasonEntityStore.QueryAsync(seasons => seasons.OrderByDescending(season => season.EndDate))).First();
 
@@ -104,6 +111,16 @@ public class UploadsManager : IUploadsManager
                         playerEntity.SteamUsername = entry.SteamUsername;
                     });
                 }
+
+                if (entry.StartingTeam == "ct")
+                {
+                    team1.Add(playerEntity);
+                }
+                else if (entry.StartingTeam == "t")
+                {
+                    team2.Add(playerEntity);
+                }
+
                 await playerMatchStatEntityStore.Create(() =>
                 {
                     return new PlayerMatchStatEntity
@@ -151,6 +168,28 @@ public class UploadsManager : IUploadsManager
                         VictimBlind = entry.VictimFlashed
                     };
                 });
+            }
+
+            var team1FirstPlayerMatchStatDataList = await playerMatchStatEntityStore.QueryAsync(
+                pmse => pmse.Where(pmse => pmse.PlayerId == team1.First().SteamId && pmse.MatchId == match.DemoFileHash));
+
+            if (team1FirstPlayerMatchStatDataList.Count != 1)
+            {
+                throw new Exception("Something went wrong determining which team won the match");
+            }
+            var team1FirstPlayerMatchStatData = team1FirstPlayerMatchStatDataList.First();
+
+            if (team1FirstPlayerMatchStatData.TiedMatch)
+            {
+                this.ratingCalculator.CalculateMatchRatingChange(team1, team2, new int[] { 1, 1 });
+            }
+            else if (team1FirstPlayerMatchStatData.WonMatch)
+            {
+                this.ratingCalculator.CalculateMatchRatingChange(team1, team2, new int[] { 0, 1 });
+            }
+            else
+            {
+                this.ratingCalculator.CalculateMatchRatingChange(team1, team2, new int[] { 1, 0 });
             }
 
             await matchUploadEntityStore.Update(matchUploadId, (entity) =>

@@ -93,6 +93,7 @@ builder.Services.AddScoped<IUploadsManager>(serviceProvider =>
         serviceProvider.GetRequiredService<IMediaStorageClient>(),
         serviceProvider.GetRequiredService<ITransactionOperation>(),
         serviceProvider.GetRequiredService<IBackgroundTaskQueue>(),
+        serviceProvider.GetRequiredService<IRatingCalculator>(),
         serviceProvider.GetRequiredService<ILogger<UploadsManager>>());
 });
 

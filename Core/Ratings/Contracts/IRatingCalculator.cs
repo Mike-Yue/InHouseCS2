@@ -8,6 +8,8 @@ public interface IRatingCalculator
 {
     public Dictionary<long, Rating> RecalculateAllGames(List<PlayerEntity> players, List<MatchEntity> matches);
 
+    public Dictionary<long, (double rating, double deviation)> CalculateMatchRatingChange(List<PlayerEntity> team1, List<PlayerEntity> team2, int[] teamRanks);
+
     public double CalculateMatchQuality(List<PlayerEntity> team1, List<PlayerEntity> team2);
 
     public double CalculateTeam1WinPercentage(List<PlayerEntity> team1, List<PlayerEntity> team2);

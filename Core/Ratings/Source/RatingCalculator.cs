@@ -34,6 +34,36 @@ public class RatingCalculator : IRatingCalculator
         return TrueSkillCalculator.CalculateMatchQuality(this.gameInfo, Teams.Concat(trueSkillTeam1, trueSkillTeam2));
     }
 
+    public Dictionary<long, (double rating, double deviation)> CalculateMatchRatingChange(
+        List<PlayerEntity> team1, 
+        List<PlayerEntity> team2,
+        int[] teamRanks)
+    {
+        var output = new Dictionary<long, (double rating, double deviation)>();
+        var trueSkillTeam1 = new Team();
+        var trueSkillTeam2 = new Team();
+        foreach (var playerEntity in team1)
+        {
+            trueSkillTeam1.AddPlayer(new Player(playerEntity.SteamId), new Rating(playerEntity.Rating, playerEntity.Deviation));
+        }
+        foreach (var playerEntity in team2)
+        {
+            trueSkillTeam2.AddPlayer(new Player(playerEntity.SteamId), new Rating(playerEntity.Rating, playerEntity.Deviation));
+        }
+        var teams = new List<Team>
+        {
+            trueSkillTeam1,
+            trueSkillTeam2,
+        };
+        var ratings = TrueSkillCalculator.CalculateNewRatings(this.gameInfo, Teams.Concat(trueSkillTeam1, trueSkillTeam2), teamRanks);
+        foreach (var player in ratings.Keys)
+        {
+            var steamId = Convert.ToInt64(player.Id);
+            output.Add(steamId, (ratings[player].Mean, ratings[player].StandardDeviation));
+        }
+        return output;
+    }
+
     public Dictionary<long, Rating> RecalculateAllGames(List<PlayerEntity> playerEntities, List<MatchEntity> matchEntities)
     {
         var steamIdToPlayerMap = new Dictionary<long, Player>();
