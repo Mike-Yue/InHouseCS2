@@ -181,15 +181,39 @@ public class UploadsManager : IUploadsManager
 
             if (team1FirstPlayerMatchStatData.TiedMatch)
             {
-                this.ratingCalculator.CalculateMatchRatingChange(team1, team2, new int[] { 1, 1 });
+                var output = this.ratingCalculator.CalculateMatchRatingChange(team1, team2, new int[] { 1, 1 });
+                foreach (var key in output.Keys)
+                {
+                    await playerEntityStore.Update(key, (playerEntity) =>
+                    {
+                        playerEntity.Rating = output[key].rating;
+                        playerEntity.Deviation = output[key].deviation;
+                    });
+                }
             }
             else if (team1FirstPlayerMatchStatData.WonMatch)
             {
-                this.ratingCalculator.CalculateMatchRatingChange(team1, team2, new int[] { 0, 1 });
+                var output = this.ratingCalculator.CalculateMatchRatingChange(team1, team2, new int[] { 0, 1 });
+                foreach (var key in output.Keys)
+                {
+                    await playerEntityStore.Update(key, (playerEntity) =>
+                    {
+                        playerEntity.Rating = output[key].rating;
+                        playerEntity.Deviation = output[key].deviation;
+                    });
+                }
             }
             else
             {
-                this.ratingCalculator.CalculateMatchRatingChange(team1, team2, new int[] { 1, 0 });
+                var output = this.ratingCalculator.CalculateMatchRatingChange(team1, team2, new int[] { 1, 0 });
+                foreach (var key in output.Keys)
+                {
+                    await playerEntityStore.Update(key, (playerEntity) =>
+                    {
+                        playerEntity.Rating = output[key].rating;
+                        playerEntity.Deviation = output[key].deviation;
+                    });
+                }
             }
 
             await matchUploadEntityStore.Update(matchUploadId, (entity) =>
