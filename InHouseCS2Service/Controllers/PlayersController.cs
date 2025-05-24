@@ -28,13 +28,5 @@ namespace InHouseCS2Service.Controllers
             }
             return this.Ok(JsonSerializer.Serialize(output));
         }
-
-        [HttpPost]
-        public string Post()
-        {
-            this.logger.LogWarning("He;pp");
-            return "Post!";
-        }
-
     }
 }

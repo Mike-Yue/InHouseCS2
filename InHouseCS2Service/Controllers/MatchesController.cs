@@ -2,7 +2,6 @@
 using InHouseCS2.Core.Managers.Contracts.Models;
 using Microsoft.AspNetCore.Mvc;
 using System.Text.Json;
-using System.Threading.Tasks;
 
 namespace InHouseCS2Service.Controllers
 {
@@ -41,6 +40,5 @@ namespace InHouseCS2Service.Controllers
             }
             return this.Ok(JsonSerializer.Serialize(output));
         }
-
     }
 }
