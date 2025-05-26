@@ -68,6 +68,7 @@ public class SeasonsManager : ISeasonsManager
             .Select(g => new SeasonLeaderboardPlayerData
             {
                 SteamId = g.Key,
+                Username = g.Select(pmse => pmse.Player.SteamUsername).First(),
                 Kills = g.Sum(pmse => pmse.Kills),
                 Assists = g.Sum(pmse => pmse.DamageAssists) + g.Sum(pmse => pmse.FlashAssists),
                 Deaths = g.Sum(pmse => pmse.Deaths),

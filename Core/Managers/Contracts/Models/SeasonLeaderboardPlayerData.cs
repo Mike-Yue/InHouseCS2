@@ -3,6 +3,7 @@
 public class SeasonLeaderboardPlayerData
 {
     public required long SteamId { get; init; }
+    public required string Username { get; init; }
     public required double Kills { get; init; }
     public required double Assists { get; init; }
     public required double Deaths { get; init; }
