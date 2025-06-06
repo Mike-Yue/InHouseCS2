@@ -54,7 +54,8 @@ namespace InHouseCS2.Core.EntityStores
             modelBuilder.Entity<PlayerMatchStatEntity>()
                 .HasOne(pms => pms.Match)
                 .WithMany(m => m.PlayerMatchStats)
-                .HasForeignKey(pms => pms.MatchId);
+                .HasForeignKey(pms => pms.MatchId)
+                .OnDelete(DeleteBehavior.Cascade);
 
             modelBuilder.Entity<PlayerMatchStatEntity>()
                 .HasIndex(k => new { k.PlayerId, k.MatchId })

@@ -40,5 +40,12 @@ namespace InHouseCS2Service.Controllers
             }
             return this.Ok(JsonSerializer.Serialize(output));
         }
+
+        [HttpDelete("{matchId}")]
+        public async Task<IActionResult> Delete(string matchId)
+        {
+            await this.matchesManager.DeleteMatch(matchId);
+            return this.Ok();
+        }
     }
 }

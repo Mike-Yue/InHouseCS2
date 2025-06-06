@@ -22,6 +22,27 @@ public class MatchesManager : IMatchesManager
         this.logger = logger;
     }
 
+    public async Task DeleteMatch(string matchId)
+    {
+        await this.transactionOperation.ExecuteOperationInTransactionAsync(async (operation) =>
+        {
+            var matchEntityStore = operation.GetEntityStore<MatchEntity, string>();
+            var match = await matchEntityStore.Get(matchId);
+            if (match != null)
+            {
+                await matchEntityStore.Delete(match);
+            }
+
+            // Also delete all attempted matchupload entities of this match
+            var matchUploadEntityStore = operation.GetEntityStore<MatchUploadEntity, int>();
+            var matchUploadEntities = await matchUploadEntityStore.FindAll(m => m.DemoFingerprint == matchId);
+            foreach (var matchUpload in matchUploadEntities)
+            {
+                await matchUploadEntityStore.Delete(matchUpload);
+            }
+        });
+    }
+
     public async Task<GeneratedMatchTeams?> GenerateMatchTeams(MatchPlayerList matchPlayerList)
     {
         if (matchPlayerList.PlayerList.Count != 10)
