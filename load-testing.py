@@ -81,7 +81,7 @@ def generate_match_data():
         generate_player_stat(steam_id, False, False, "t") for steam_id in losing_ids
     ]
 
-    match_kills = [generate_kill_event(steam_ids) for _ in range(random.randint(5, 20))]
+    match_kills = [generate_kill_event(steam_ids) for _ in range(random.randint(40, 120))]
 
     return {
         "failedToParse": False,
@@ -113,7 +113,7 @@ if __name__ == "__main__":
                 winningPlayers.append("{}-{}".format(stat['steamUsername'], stat['startingTeam']))
             else:
                 losingPlayers.append("{}-{}".format(stat['steamUsername'], stat['startingTeam']))
-        print(winningPlayers, losingPlayers)
+
         response_dict = json.loads(output.text)
         id = response_dict["id"]
         match_url = "https://inhousecs2.azurewebsites.net/uploads/{}".format(id)
