@@ -18,6 +18,21 @@ public class PlayersManager : IPlayersManager
         this.logger = logger;
     }
 
+    public async Task<List<PlayerMetadata>> GetAllPlayers()
+    {
+        var playerEntityStore = this.transactionOperation.GetEntityStore<PlayerEntity, long>();
+        var playerEntities = await playerEntityStore.QueryAsync(q =>
+        {
+            return q.Select(player => new PlayerMetadata
+            {
+                SteamUsername = player.SteamUsername,
+                SteamId = player.SteamId,
+                Rating = player.Rating,
+            });
+        });
+        return playerEntities;
+    }
+
     public async Task<PlayerOverallData?> GetOverallPlayerData(long playerId)
     {
         var playerMatchEntityStore = this.transactionOperation.GetEntityStore<PlayerMatchStatEntity, int>();
@@ -31,6 +46,7 @@ public class PlayersManager : IPlayersManager
         {
             SteamId = playerId,
             SteamUsername = playerEntity.SteamUsername,
+            Rating = playerEntity.Rating,
         };
 
         var playerMapAggregatedData = await playerMatchEntityStore.QueryAsync<PlayerMapAggregatedData>(q =>

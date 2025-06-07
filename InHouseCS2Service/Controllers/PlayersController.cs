@@ -28,5 +28,12 @@ namespace InHouseCS2Service.Controllers
             }
             return this.Ok(JsonSerializer.Serialize(output));
         }
+
+        [HttpGet]
+        public async Task<IActionResult> GetAllPlayers()
+        {
+            var output = await this.playersManager.GetAllPlayers();
+            return this.Ok(JsonSerializer.Serialize(output));
+        }
     }
 }

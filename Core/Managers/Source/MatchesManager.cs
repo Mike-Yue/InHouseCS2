@@ -87,9 +87,9 @@ public class MatchesManager : IMatchesManager
             MatchQuality = bestMatchData.MatchQualityScore,
             Team1WinPercentage = bestMatchData.Team1WinPercentage,
             Team1 = bestMatchData.Team1.Select(
-                playerEntity => new PlayerMetadata { SteamId = playerEntity.SteamId, SteamUsername = playerEntity.SteamUsername }).ToList(),
+                playerEntity => new PlayerMetadata { SteamId = playerEntity.SteamId, SteamUsername = playerEntity.SteamUsername, Rating = playerEntity.Rating }).ToList(),
             Team2 = bestMatchData.Team2.Select(
-                playerEntity => new PlayerMetadata { SteamId = playerEntity.SteamId, SteamUsername = playerEntity.SteamUsername }).ToList(),
+                playerEntity => new PlayerMetadata { SteamId = playerEntity.SteamId, SteamUsername = playerEntity.SteamUsername, Rating = playerEntity.Rating }).ToList(),
         };
     }
 
